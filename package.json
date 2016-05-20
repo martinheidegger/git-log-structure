@@ -1,0 +1,21 @@
+{
+  "name": "structural-age",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard && tap -- test/*.js",
+    "lint": "standard",
+    "quick": "tap -- test/*.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "standard": "^7.1.0",
+    "tap": "^5.7.1"
+  },
+  "dependencies": {
+    "nodegit": "^0.13.0"
+  }
+}
