@@ -16,6 +16,6 @@
     "tap": "^5.7.1"
   },
   "dependencies": {
-    "nodegit": "^0.13.0"
+    "nodegit": "^0.14.1"
   }
 }

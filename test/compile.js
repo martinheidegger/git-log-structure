@@ -4,15 +4,56 @@ var compile = require('../compile')
 
 test('A simple file in a repo should have the same age for all properties', function (t) {
   return compile('test/data/simple/test.json').then(function (data) {
-    console.log('data')
     t.deepEqual(data, {
-      a: [
-        {type: 'added', time: 1463654010000}
-      ],
-      b: [
-        {type: 'added', time: 1463654010000}
-      ]
+      tree: {
+        a: {
+          value: 1,
+          history: [{type: 'added', time: 1463654010000}]
+        },
+        b: {
+          value: 2,
+          history: [{type: 'added', time: 1463654010000}]
+        }
+      },
+      history: [{type: 'added', time: 1463654010000}]
     })
+    t.end()
+  }).catch((err) => {
+    console.log(err)
+    t.fail(err)
     t.end()
   })
 })
+test('A simple file in a repo with a tree have the same age for all properties', function (t) {
+  return compile('test/data/simple_with_tree/test.json').then(function (data) {
+    t.deepEqual(data, {
+      tree: {
+        a: {
+          tree: {
+            b: {
+              tree: {
+                c: {
+                  value: 1,
+                  history: [{type: 'added', time: 1463703348000}] 
+                }
+              },
+              history: [{type: 'added', time: 1463703348000}]
+            }
+          },
+          history: [{type: 'added', time: 1463703348000}]
+        },
+        d: {
+          value: {},
+          history: [{type: 'added', time: 1463703348000}]
+        }
+      },
+      history: [{type: 'added', time: 1463703348000}] 
+    })
+    t.end()
+  }).catch((err) => {
+    console.log(err)
+    t.fail(err)
+    t.end()
+  })
+})
+
