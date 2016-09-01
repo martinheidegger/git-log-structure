@@ -71,10 +71,10 @@ function addStory (result, newStory, previousTime, parent, key) {
         })
         .forEach(function (newStoryKey) {
           result.tree[newStoryKey] = {
-            value: null,
+            value: undefined,
             history: [
-              {type: 'deleted', time: previousTime},
-              newStoryKey.history[0]
+              {type: 'deleted', time: previousTime, from: newStory.tree[newStoryKey] },
+              newStory.history[0]
             ]
           }
         })
