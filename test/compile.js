@@ -106,3 +106,24 @@ test('A simple file in a repo with an removed property', function (t) {
     t.end()
   })
 })
+test('A simple file in a repo with an changed property', function (t) {
+  return compile('test/data/simple_modified/test.json').then(function (data) {
+    t.deepEqual(data, {
+      tree: {
+        a: {
+          value: 2,
+          history: [
+            {type: 'modified', time: 1472770859000, from: 1},
+            {type: 'added', time: 1472770835000}
+          ]
+        }
+      },
+      history: [{type: 'added', time: 1472770835000}] 
+    })
+    t.end()
+  }).catch((err) => {
+    console.log(err)
+    t.fail(err)
+    t.end()
+  })
+})

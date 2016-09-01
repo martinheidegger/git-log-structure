@@ -88,7 +88,7 @@ function addStory (result, newStory, previousTime, parent, key) {
     result.history.push(newStory.history[0])
   } else if (result.value !== newStory.value) {
     before = last(result.history)
-    before.type = 'modfied'
+    before.type = 'modified'
     before.from = newStory.value
     result.history.push(newStory.history[0])
   } else {
