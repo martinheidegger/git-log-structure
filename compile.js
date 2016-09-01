@@ -1,5 +1,6 @@
 'use strict'
 const git = require('nodegit')
+const last = require('lodash.last')
 
 function getRepo (path, repo) {
   if (repo) {
@@ -45,6 +46,116 @@ function toStoryObject (value, date) {
   }
 }
 
+function addStory (result, newStory, previousTime, parent, key) {
+  var before
+  if (!newStory) {
+    // Nothing to do here, the result was added before
+  } else if (result.tree) {
+    if (!newStory.tree) {
+      before = last(result.history)
+      before.type = 'expanded'
+      before.from = newStory.value
+      result.history.push(newStory.history[0])
+    } else {
+      var foundKeys = Object
+        .keys(result.tree)
+        .reduce(function (foundKeys, resultKey) {
+          foundKeys[resultKey] = true
+          addStory(result.tree[resultKey], newStory.tree[resultKey], previousTime, result, resultKey)
+          return foundKeys
+        }, {})
+      Object
+        .keys(newStory.tree)
+        .filter(function (newStoryKey) {
+          return !foundKeys[newStoryKey]
+        })
+        .forEach(function (newStoryKey) {
+          result.tree[newStoryKey] = {
+            value: null,
+            history: [
+              {type: 'deleted', time: previousTime},
+              newStoryKey.history[0]
+            ]
+          }
+        })
+      before = last(result.history)
+      before.time = newStory.history[0].time
+    }
+  } else if (newStory.tree) {
+    before = last(result.history)
+    before.type = 'reduced'
+    before.from = newStory.tree
+    result.history.push(newStory.history[0])
+  } else if (result.value !== newStory.value) {
+    before = last(result.history)
+    before.type = 'modfied'
+    before.from = newStory.value
+    result.history.push(newStory.history[0])
+  } else {
+    before = last(result.history)
+    before.time = newStory.history[0].time
+  }
+}
+
+function processHistoryEntry (repo, historyEntry, result) {
+  var commitSha = historyEntry.commit.sha()
+  return repo.getCommit(commitSha)
+    .then(function (commit) {
+      var commitDate = commit.date()
+      return commit.getDiff()
+        .then(function (diffs) {
+          for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
+            var diff = diffs[diffNr]
+            var deltas = diff.numDeltas()
+            for (var i = 0; i < deltas; i++) {
+              var delta = diff.getDelta(i)
+              var newPath = delta.newFile().path()
+              // console.log(newPath, result)
+              if (result.path === newPath) {
+                //console.log('found current path')
+                result.path = delta.oldFile().path()
+                //console.log('moved to ', result.path)
+                //console.log('found id', delta.newFile().id())
+                return repo.getBlob(delta.newFile().id())
+                  .then(function (blob) {
+                    var data = JSON.parse(blob.content())
+                    var currentTime = commitDate.getTime()
+                    var story = toStoryObject(data, currentTime)
+                    if (result.time === -1) {
+                      story.path = result.path
+                      result = story
+                    } else {
+                      addStory(result, story, result.time)
+                    }
+                    result.time = currentTime
+                    return result
+                  })
+              }
+            }
+          }
+          return Promise.reject(new Error('No diff for ' + result.path + ' found in commit ' + commit.sha()))
+        })
+    })
+}
+
+function processHistoryEntries (repo, historyEntries, path, result) {
+  if (historyEntries.length === 0) {
+    return null
+  } else {
+    if (!result) {
+      result = {
+        path: path,
+        time: -1
+      }
+    }
+    return processHistoryEntry(repo, historyEntries.shift(), result)
+      .then(function (result) {
+        // Recursive! Weeee
+        return processHistoryEntries(repo, historyEntries, result.path, result) || result
+      })
+  }
+}
+
 module.exports = function compile (path, repo) {
   return getRepo(path, repo)
     .then(function (repo) {
@@ -53,46 +164,16 @@ module.exports = function compile (path, repo) {
           var walker = repo.createRevWalk()
           walker.sorting(git.Revwalk.SORT.TIME)
           walker.push(headCommit)
-          var currentPath = path
-          return walker.fileHistoryWalk(path, 10000).then(function (commitSets) {
-            var processCommit = function (resolve) {
-              if (commitSets.length === 0) {
-                return resolve(false);
-              } else {
-                var historyEntry = commitSets.shift()
-                var commitSha = historyEntry.commit.sha()
-                return resolve(repo.getCommit(commitSha)
-                  .then(function (commit) {
-                    var commitDate = commit.date()
-                    return commit.getDiff()
-                      .then(function (diffs) {
-                        for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
-                          var diff = diffs[diffNr]
-                          var deltas = diff.numDeltas()
-                          for (var i = 0; i < deltas; i++) {
-                            var delta = diff.getDelta(i)
-                            var newPath = delta.newFile().path()
-                            if (currentPath === newPath) {
-                              // console.log('found current path')
-                              currentPath = delta.oldFile().path()
-                              // console.log('moved to ', currentPath)
-                              // console.log('found id', delta.newFile().id())
-                              return repo.getBlob(delta.newFile().id())
-                                .then(function (blob) {
-                                  var data = JSON.parse(blob.content());
-                                  return toStoryObject(data, commitDate.getTime())
-                                  return resolve(new Promise(processCommit))
-                                })
-                            }
-                          }
-                        }
-                        return Promise.reject(new Error('No diff for ' + currentPath + ' found in commit ' + commitSha))
-                      })
-                  }))
-              }
-            }
-            return new Promise(processCommit)
-          })
+          return walker.fileHistoryWalk(path, 10000).then(function (historyEntries) {
+            var story = false
+            return processHistoryEntries(repo, historyEntries, path)
+          }).then(function (story) {
+            // console.log('')
+            // console.log(JSON.stringify(story, null, 2))
+            delete story.path
+            delete story.time
+            return story
+          }) 
         })
     })
 }

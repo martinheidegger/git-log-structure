@@ -62,14 +62,14 @@ test('A simple file in a repo with an added property', function (t) {
       tree: {
         a: {
           value: 1,
-          history: [{type: 'added', time: 1472745086000}]
+          history: [{type: 'added', time: 1472745051000}]
         },
         b: {
           value: 2,
           history: [{type: 'added', time: 1472745086000}]
         }
       },
-      history: [{type: 'added', time: 1472745086000}] 
+      history: [{type: 'added', time: 1472745051000}] 
     })
     t.end()
   }).catch((err) => {
