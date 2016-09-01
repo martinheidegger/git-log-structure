@@ -56,4 +56,25 @@ test('A simple file in a repo with a tree have the same age for all properties',
     t.end()
   })
 })
-
+test('A simple file in a repo with an added property', function (t) {
+  return compile('test/data/simple_added/test.json').then(function (data) {
+    t.deepEqual(data, {
+      tree: {
+        a: {
+          value: 1,
+          history: [{type: 'added', time: 1472745086000}]
+        },
+        b: {
+          value: 2,
+          history: [{type: 'added', time: 1472745086000}]
+        }
+      },
+      history: [{type: 'added', time: 1472745086000}] 
+    })
+    t.end()
+  }).catch((err) => {
+    console.log(err)
+    t.fail(err)
+    t.end()
+  })
+})
