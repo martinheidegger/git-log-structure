@@ -160,11 +160,9 @@ function processHistoryEntries (repo, historyEntries, path, result) {
 module.exports = function compile (path, repo) {
   return getRepo(path, repo)
     .then(function (repo) {
-      return repo.getHeadCommit()
-        .then(function (headCommit) {
           var walker = repo.createRevWalk()
           walker.sorting(git.Revwalk.SORT.TIME)
-          walker.push(headCommit)
+      walker.pushHead()
           return walker.fileHistoryWalk(path, 10000).then(function (historyEntries) {
             if (historyEntries.length === 0) {
               var err = new Error('ENOENT: file does not exist in repository \'' + path + '\'')
@@ -181,5 +179,4 @@ module.exports = function compile (path, repo) {
             return story
           }) 
         })
-    })
 }
