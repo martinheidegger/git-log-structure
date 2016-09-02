@@ -49,6 +49,20 @@ test('A renamed file', function (t) {
 test('A complexly renamed file', function (t) {
   return compareCompiled(t, 'data/multiple-renamings')
 })
+test('A simple yaml file', function (t) {
+  var target = 'data/simple_yaml'
+  var expected = JSON.parse(fs.readFileSync(path.join(__dirname, target, 'expected.json')))
+  return compile('test/' + target + '/test.yml')
+    .then(function (data) {
+      t.deepEqual(data, expected)
+      t.end()
+    })
+    .catch(function (err) {
+      console.log(err)
+      t.fail(err)
+      t.end()
+    })
+})
 test('A file that never existed', function (t) {
   return compile('data/never_existed/test.json')
     .then(function (data) {

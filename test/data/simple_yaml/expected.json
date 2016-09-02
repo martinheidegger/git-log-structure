@@ -1,0 +1,77 @@
+{
+  "path": "test/data/simple_yaml/test.yml",
+  "tree": {
+    "a": {
+      "value": 1,
+      "history": [
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    },
+    "b": {
+      "tree": {
+        "c": {
+          "value": 3,
+          "history": [
+            {
+              "type": "modified",
+              "from": 2,
+              "commit": 0
+            },
+            {
+              "type": "added",
+              "commit": 1
+            }
+          ]
+        }
+      },
+      "history": [
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    },
+    "d": {
+      "tree": {
+        "e": {
+          "value": 4,
+          "history": [
+            {
+              "type": "added",
+              "commit": 0
+            }
+          ]
+        }
+      },
+      "history": [
+        {
+          "type": "added",
+          "commit": 0
+        }
+      ]
+    }
+  },
+  "commits": [
+    {
+      "path": "test/data/simple_yaml/test.yml",
+      "time": 1472830214000,
+      "sha": "9e301127ea99f25bbece7203cefc4b52169903b5",
+      "message": "Modified the yaml file for good measure.\n"
+    },
+    {
+      "path": "test/data/simple_yaml/test.yml",
+      "time": 1472830135000,
+      "sha": "e24bc22fdcd99a0f0790769957886c42db53870f",
+      "message": "Added yml file to test yml integration\n"
+    }
+  ],
+  "history": [
+    {
+      "type": "added",
+      "commit": 1
+    }
+  ]
+}

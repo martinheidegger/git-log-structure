@@ -1,6 +1,8 @@
 'use strict'
 const git = require('nodegit')
 const last = require('lodash.last')
+const path = require('path')
+var jsYaml
 
 function getRepo (path, repo) {
   if (repo) {
@@ -129,7 +131,15 @@ function processHistoryEntry (repo, historyEntry, result) {
                 //console.log('found id', delta.newFile().id())
                 return repo.getBlob(delta.newFile().id())
                   .then(function (blob) {
-                    var data = JSON.parse(blob.content())
+                    var data
+                    if (/\.ya?ml$/ig.test(path.extname(result.path))) {
+                      if (!jsYaml) {
+                        jsYaml = require('js-yaml')
+                      }
+                      data = jsYaml.load(blob.content().toString())
+                    } else {
+                      data = JSON.parse(blob.content())
+                    }
                     var currentTime = commitDate.getTime()
                     var story = toStoryObject(data, result.commits ? result.commits.length : 0)
                     if (!result.commits) {

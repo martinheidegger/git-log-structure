@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+var util = require('util')
+
+require('../compile.js')(process.argv[2], process.argv[3]).then(function (story) {
+	console.log(util.inspect(story, {depth: null}))
+}).catch(function (err) {
+	console.log(err.stack || err)
+	process.exit(1)
+})

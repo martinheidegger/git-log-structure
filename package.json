@@ -16,6 +16,7 @@
     "tap": "^5.7.1"
   },
   "dependencies": {
+    "js-yaml": "^3.6.1",
     "lodash.last": "^3.0.0",
     "nodegit": "^0.14.1"
   }
