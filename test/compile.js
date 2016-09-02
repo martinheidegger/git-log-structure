@@ -177,28 +177,34 @@ test('A simple file in a repo with an changed property', function (t) {
   })
 })
 test('A simple file in a repo with a twice changed property', function (t) {
-  return compile('test/data/simple_modified/test.json').then(function (data) {
+  return compile('test/data/simple_modified_twice/test.json').then(function (data) {
     t.deepEqual(data, {
       tree: {
         a: {
-          value: 2,
+          value: 3,
           history: [
-            {type: 'modified', commit: 0, from: 1},
-            {type: 'added', commit: 1}
+            {type: 'modified', commit: 0, from: 2},
+            {type: 'modified', commit: 1, from: 1},
+            {type: 'added', commit: 2}
           ]
         }
       },
-      history: [{type: 'added', commit: 1}],
+      history: [{type: 'added', commit: 2}],
       commits: [
         {
-          time: 1472770859000,
-          sha: '0310e11b7c21e045c865f25b3972f696cdf1a28a',
-          message: 'Commit that modifies a test-file\n'
+          time: 1472777611000,
+          sha: '5e7f6c49f7375c48e3eea626bcf803321fac259d',
+          message: 'Last commit of a file that is modified twice.\n'
         },
         {
-          time: 1472770835000,
-          sha: '0de6359ab7d7c55fefaefd3b81cf79349724ea22',
-          message: 'First commit of a file that is going to be modified once\n'
+          time: 1472777584000,
+          sha: '5e4fd952ec6f4f80cc5f74632a0f23bfea8d7b38',
+          message: 'Second commit of a file that is modified twice.\n'
+        },
+        {
+          time: 1472777566000,
+          sha: '42151523c4ba5b1e7913bd6f588263164f59b070',
+          message: 'First commit of a file that is modified twice.\n'
         }
       ]
     })
