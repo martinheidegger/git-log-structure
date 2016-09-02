@@ -1,0 +1,55 @@
+{
+  "tree": {
+    "a": {
+      "value": 1,
+      "history": [
+        {
+          "type": "reduced",
+          "commit": 0,
+          "from": {
+            "b": {
+              "value": 2,
+              "history": [
+                {
+                  "type": "added",
+                  "commit": 1
+                }
+              ]
+            },
+            "c": {
+              "value": 3,
+              "history": [
+                {
+                  "type": "added",
+                  "commit": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    }
+  },
+  "history": [
+    {
+      "type": "added",
+      "commit": 1
+    }
+  ],
+  "commits": [
+    {
+      "time": 1472783276000,
+      "sha": "0cc86132c5c41ee6696e784b7607177ed5939581",
+      "message": "Last commit of a file which's property was reduced.\n"
+    },
+    {
+      "time": 1472783250000,
+      "sha": "2b0f2bbb174c7abe4dcc03ac356b1b92ddb811ec",
+      "message": "First commit of a file with a property that will be reduced.\n"
+    }
+  ]
+}

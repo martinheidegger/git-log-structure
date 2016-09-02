@@ -40,3 +40,7 @@ test('A simple file in a repo with a twice changed property', function (t) {
 test('A simple file in a repo with an expanded property', function (t) {
   return compareCompiled(t, 'data/simple_expanded')
 })
+test('A simple file in a repo with a reduced property', function (t) {
+  return compareCompiled(t, 'data/simple_reduced')
+})
+
