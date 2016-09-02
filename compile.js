@@ -23,7 +23,7 @@ function flatData (value, prefix, result) {
   return result
 }
 
-function toStoryObject (value, date) {
+function toStoryObject (value, commit) {
   if (typeof value === 'object' && typeof value !== null) {
     var keys = Object.keys(value)
     var keyLength = keys.length
@@ -32,21 +32,21 @@ function toStoryObject (value, date) {
       for (var i = 0; i < keyLength; i++) {
         var key = keys[i]
         // TODO: recursive check
-        tree[key] = toStoryObject(value[key], date)
+        tree[key] = toStoryObject(value[key], commit)
       }
       return {
         tree: tree,
-        history: [{type: 'added', time: date}]
+        history: [{type: 'added', commit: commit}]
       }
     }
   }
   return {
     value: value,
-    history: [{type: 'added', time: date}]
+    history: [{type: 'added', commit: commit}]
   }
 }
 
-function addStory (result, newStory, previousTime, parent, key) {
+function addStory (result, newStory, previousCommit, parent, key) {
   var before
   if (!newStory) {
     // Nothing to do here, the result was added before
@@ -61,7 +61,7 @@ function addStory (result, newStory, previousTime, parent, key) {
         .keys(result.tree)
         .reduce(function (foundKeys, resultKey) {
           foundKeys[resultKey] = true
-          addStory(result.tree[resultKey], newStory.tree[resultKey], previousTime, result, resultKey)
+          addStory(result.tree[resultKey], newStory.tree[resultKey], previousCommit, result, resultKey)
           return foundKeys
         }, {})
       Object
@@ -73,13 +73,13 @@ function addStory (result, newStory, previousTime, parent, key) {
           result.tree[newStoryKey] = {
             value: undefined,
             history: [
-              {type: 'deleted', time: previousTime, from: newStory.tree[newStoryKey] },
+              {type: 'deleted', commit: previousCommit, from: newStory.tree[newStoryKey] },
               newStory.history[0]
             ]
           }
         })
       before = last(result.history)
-      before.time = newStory.history[0].time
+      before.commit++
     }
   } else if (newStory.tree) {
     before = last(result.history)
@@ -93,7 +93,7 @@ function addStory (result, newStory, previousTime, parent, key) {
     result.history.push(newStory.history[0])
   } else {
     before = last(result.history)
-    before.time = newStory.history[0].time
+    before.commit++
   }
 }
 
@@ -120,14 +120,15 @@ function processHistoryEntry (repo, historyEntry, result) {
                   .then(function (blob) {
                     var data = JSON.parse(blob.content())
                     var currentTime = commitDate.getTime()
-                    var story = toStoryObject(data, currentTime)
-                    if (result.time === -1) {
+                    var story = toStoryObject(data, result.commits ? result.commits.length : 0)
+                    if (!result.commits) {
                       story.path = result.path
+                      story.commits = []
                       result = story
                     } else {
-                      addStory(result, story, result.time)
+                      addStory(result, story, result.commits.length - 1)
                     }
-                    result.time = currentTime
+                    result.commits.push({time: currentTime, sha: commit.sha(), message: commit.message()})
                     return result
                   })
               }
