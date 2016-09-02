@@ -1,0 +1,40 @@
+{
+  "tree": {
+    "a": {
+      "value": 1,
+      "history": [
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    },
+    "b": {
+      "value": 2,
+      "history": [
+        {
+          "type": "added",
+          "commit": 0
+        }
+      ]
+    }
+  },
+  "history": [
+    {
+      "type": "added",
+      "commit": 1
+    }
+  ],
+  "commits": [
+    {
+      "time": 1472745086000,
+      "sha": "b698c48ce6039aff453e47791de71e01ab68e532",
+      "message": "second commit wth added fields\n"
+    },
+    {
+      "time": 1472745051000,
+      "sha": "ccb6991ed1ed6d6126c12ccce658fa27a26ef803",
+      "message": "first commit with two files\n"
+    }
+  ]
+}

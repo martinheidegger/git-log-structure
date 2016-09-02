@@ -1,0 +1,36 @@
+{
+  "tree": {
+    "a": {
+      "value": 2,
+      "history": [
+        {
+          "type": "modified",
+          "commit": 0,
+          "from": 1
+        },
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    }
+  },
+  "history": [
+    {
+      "type": "added",
+      "commit": 1
+    }
+  ],
+  "commits": [
+    {
+      "time": 1472770859000,
+      "sha": "0310e11b7c21e045c865f25b3972f696cdf1a28a",
+      "message": "Commit that modifies a test-file\n"
+    },
+    {
+      "time": 1472770835000,
+      "sha": "0de6359ab7d7c55fefaefd3b81cf79349724ea22",
+      "message": "First commit of a file that is going to be modified once\n"
+    }
+  ]
+}

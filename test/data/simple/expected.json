@@ -1,0 +1,35 @@
+{
+  "tree": {
+    "a": {
+      "value": 1,
+      "history": [
+        {
+          "type": "added",
+          "commit": 0
+        }
+      ]
+    },
+    "b": {
+      "value": 2,
+      "history": [
+        {
+          "type": "added",
+          "commit": 0
+        }
+      ]
+    }
+  },
+  "commits": [
+    {
+      "time": 1463654010000,
+      "sha": "f5524546a0dba7a21d30055e0113e7e76225f0ac",
+      "message": "Added test json file\n"
+    }
+  ],
+  "history": [
+    {
+      "type": "added",
+      "commit": 0
+    }
+  ]
+}
