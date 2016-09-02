@@ -1,4 +1,5 @@
 {
+  "path": "test/data/simple_reduced/test.json",
   "tree": {
     "a": {
       "value": 1,
@@ -42,11 +43,13 @@
   ],
   "commits": [
     {
+      "path": "test/data/simple_reduced/test.json",
       "time": 1472783276000,
       "sha": "0cc86132c5c41ee6696e784b7607177ed5939581",
       "message": "Last commit of a file which's property was reduced.\n"
     },
     {
+      "path": "test/data/simple_reduced/test.json",
       "time": 1472783250000,
       "sha": "2b0f2bbb174c7abe4dcc03ac356b1b92ddb811ec",
       "message": "First commit of a file with a property that will be reduced.\n"

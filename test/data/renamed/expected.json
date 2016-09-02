@@ -1,0 +1,39 @@
+{
+  "path": "test/data/renamed/test.json",
+  "tree": {
+    "a": {
+      "value": 2,
+      "history": [
+        {
+          "type": "modified",
+          "from": 1,
+          "commit": 0
+        },
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    }
+  },
+  "commits": [
+    {
+      "path": "test/data/renamed/test-a.json",
+      "time": 1472810281000,
+      "sha": "a8d3846f585ae85a6d899b23487d870d31c9023a",
+      "message": "Changed file that will be moved\n"
+    },
+    {
+      "path": "test/data/renamed/test-a.json",
+      "message": "Added file that will be changed and then removed.\n",
+      "time": 1472810249000,
+      "sha": "0310fbb4aed29d91e7373b94b323a58afaab4d26"
+    }
+  ],
+  "history": [
+    {
+      "type": "added",
+      "commit": 1
+    }
+  ]
+}

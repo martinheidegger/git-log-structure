@@ -1,0 +1,39 @@
+{
+  "path": "test/data/multiple-renamings/test.json",
+  "tree": {
+    "c": {
+      "value": 9999,
+      "history": [
+        {
+          "type": "modified",
+          "from": 3,
+          "commit": 0
+        },
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    }
+  },
+  "commits": [
+    {
+      "path": "test/data/multiple-renamings/test.json",
+      "time": 1472827801000,
+      "sha": "ce5949afe2f306a8cc815501af26c59218f52dba",
+      "message": "Modified the final test once more (for good measure)\n"
+    },
+    {
+      "path": "test/data/multiple-renamings/test-c.json",
+      "message": "Added multiple files to be renamed.\n",
+      "time": 1472822841000,
+      "sha": "129fae56ed3c71424c8747d723b9f50a53beadce"
+    }
+  ],
+  "history": [
+    {
+      "type": "added",
+      "commit": 1
+    }
+  ]
+}

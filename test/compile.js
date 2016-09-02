@@ -46,6 +46,9 @@ test('A simple file in a repo with a reduced property', function (t) {
 test('A renamed file', function (t) {
   return compareCompiled(t, 'data/renamed')
 })
+test('A complexly renamed file', function (t) {
+  return compareCompiled(t, 'data/multiple-renamings')
+})
 test('A file that never existed', function (t) {
   return compile('data/never_existed/test.json')
     .then(function (data) {
@@ -53,9 +56,7 @@ test('A file that never existed', function (t) {
       t.end()
     })
     .catch(function (err) {
-      console.log(err.stack)
       t.equal(err.code, 'ENOENT')
       t.end()
     })
 })
-

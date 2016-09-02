@@ -110,11 +110,22 @@ function processHistoryEntry (repo, historyEntry, result) {
             for (var i = 0; i < deltas; i++) {
               var delta = diff.getDelta(i)
               var newPath = delta.newFile().path()
-              // console.log(newPath, result)
               if (result.path === newPath) {
+                for (var j = 0; j < deltas; j++) {
+                  if (i !== j) {
+                    var otherDelta = diff.getDelta(j)
+                    if (otherDelta.oldFile().id().cmp(delta.newFile().id()) === 0) {
+                      // It moved! See: https://github.com/nodegit/nodegit/issues/1116
+                      result.path = otherDelta.newFile().path()
+                      //result.path = delta.oldFile().path()
+                      return walkPath(repo, result, commitSha, true)
+                    }
+                  }
+                }
                 //console.log('found current path')
                 result.path = delta.oldFile().path()
-                //console.log('moved to ', result.path)
+                // console.log('moved to ', delta.newFile().path())
+                // console.log('moved to ', delta.oldFile().path())
                 //console.log('found id', delta.newFile().id())
                 return repo.getBlob(delta.newFile().id())
                   .then(function (blob) {
@@ -128,7 +139,12 @@ function processHistoryEntry (repo, historyEntry, result) {
                     } else {
                       addStory(result, story, result.commits.length - 1)
                     }
-                    result.commits.push({time: currentTime, sha: commit.sha(), message: commit.message()})
+                    result.commits.push({
+                      time: currentTime,
+                      sha: commit.sha(),
+                      message: commit.message(),
+                      path: result.path
+                    })
                     return result
                   })
               }
@@ -141,14 +157,8 @@ function processHistoryEntry (repo, historyEntry, result) {
 
 function processHistoryEntries (repo, historyEntries, path, result) {
   if (historyEntries.length === 0) {
-    return null
+    return result.commits ? result : null
   } else {
-    if (!result) {
-      result = {
-        path: path,
-        time: -1
-      }
-    }
     return processHistoryEntry(repo, historyEntries.shift(), result)
       .then(function (result) {
         // Recursive! Weeee
@@ -156,27 +166,36 @@ function processHistoryEntries (repo, historyEntries, path, result) {
       })
   }
 }
+function walkPath (repo, result, commit, skip) {
+  // console.log('walking from ', commit, 'for', result.path)
+  var walker = repo.createRevWalk()
+  walker.sorting(git.Revwalk.SORT.TIME)
+  if (commit) {
+    walker.push(commit)
+  } else {
+    walker.pushHead()
+  }
+  return walker.fileHistoryWalk(result.path, 10000).then(function (historyEntries) {
+    if (historyEntries.length === 0) {
+      var err = new Error('ENOENT: file does not exist in repository \'' + result.path + '\'')
+      err.code = 'ENOENT'
+      return Promise.reject(err)
+    }
+    if (skip) {
+      historyEntries.shift()
+    }
+    return processHistoryEntries(repo, historyEntries, result.path, result)
+  })
+}
 
 module.exports = function compile (path, repo) {
   return getRepo(path, repo)
     .then(function (repo) {
-          var walker = repo.createRevWalk()
-          walker.sorting(git.Revwalk.SORT.TIME)
-      walker.pushHead()
-          return walker.fileHistoryWalk(path, 10000).then(function (historyEntries) {
-            if (historyEntries.length === 0) {
-              var err = new Error('ENOENT: file does not exist in repository \'' + path + '\'')
-              err.code = 'ENOENT'
-              return Promise.reject(err)
-            }
-            var story = false
-            return processHistoryEntries(repo, historyEntries, path)
-          }).then(function (story) {
-            // console.log('')
-            // console.log(JSON.stringify(story, null, 2))
-            delete story.path
-            delete story.time
-            return story
-          }) 
-        })
+      return walkPath(repo, {
+        path: path
+      }).then(function (story) {
+        story.path = path
+        return story
+      })
+    })
 }
