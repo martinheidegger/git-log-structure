@@ -166,6 +166,11 @@ module.exports = function compile (path, repo) {
           walker.sorting(git.Revwalk.SORT.TIME)
           walker.push(headCommit)
           return walker.fileHistoryWalk(path, 10000).then(function (historyEntries) {
+            if (historyEntries.length === 0) {
+              var err = new Error('ENOENT: file does not exist in repository \'' + path + '\'')
+              err.code = 'ENOENT'
+              return Promise.reject(err)
+            }
             var story = false
             return processHistoryEntries(repo, historyEntries, path)
           }).then(function (story) {

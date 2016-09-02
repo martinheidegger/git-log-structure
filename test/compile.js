@@ -11,7 +11,7 @@ function compareCompiled (t, target) {
       t.deepEqual(data, expected)
       t.end()
     })
-    .catch((err) => {
+    .catch(function (err) {
       console.log(err)
       t.fail(err)
       t.end()
@@ -42,5 +42,20 @@ test('A simple file in a repo with an expanded property', function (t) {
 })
 test('A simple file in a repo with a reduced property', function (t) {
   return compareCompiled(t, 'data/simple_reduced')
+})
+test('A renamed file', function (t) {
+  return compareCompiled(t, 'data/renamed')
+})
+test('A file that never existed', function (t) {
+  return compile('data/never_existed/test.json')
+    .then(function (data) {
+      t.fail(new Error('Returned successfully, even though it is supposed to never have existed.'))
+      t.end()
+    })
+    .catch(function (err) {
+      console.log(err.stack)
+      t.equal(err.code, 'ENOENT')
+      t.end()
+    })
 })
 
