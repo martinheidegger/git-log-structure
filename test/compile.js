@@ -63,7 +63,6 @@ function compareCompiled (t, target) {
     })
 }
 
-
 test('A simple file in a repo should have the same age for all properties', function (t) {
   return compareCompiled(t, 'data/simple')
 })

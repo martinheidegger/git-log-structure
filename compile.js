@@ -11,22 +11,8 @@ function getRepo (path, repo) {
   return git.Repository.open('.')
 }
 
-function flatData (value, prefix, result) {
-  if (typeof value === 'object') {
-    const keys = Object.keys(value)
-    const l = keys.length
-    for (var i = 0; i < l; ++i) {
-      var key = keys[i]
-      flatData(value[key], prefix !== '' ? (prefix + '.' + key) : key, result)
-    }
-  } else {
-    result[prefix] = value
-  }
-  return result
-}
-
 function toStoryObject (value, commit) {
-  if (typeof value === 'object' && typeof value !== null) {
+  if (typeof value === 'object' && value !== null) {
     var keys = Object.keys(value)
     var keyLength = keys.length
     if (keyLength > 0) {
@@ -75,7 +61,7 @@ function addStory (result, newStory, previousCommit, parent, key) {
           result.tree[newStoryKey] = {
             value: undefined,
             history: [
-              {type: 'deleted', commit: previousCommit, from: newStory.tree[newStoryKey] },
+              {type: 'deleted', commit: previousCommit, from: newStory.tree[newStoryKey]},
               newStory.history[0]
             ]
           }
@@ -125,15 +111,10 @@ function processHistoryEntry (repo, historyEntry, result) {
                     if (otherDelta.oldFile().id().cmp(delta.newFile().id()) === 0) {
                       // It moved! See: https://github.com/nodegit/nodegit/issues/1116
                       result.path = otherDelta.newFile().path()
-                      //result.path = delta.oldFile().path()
                       return walkPath(repo, result, commitSha, true)
                     }
                   }
                 }
-                //console.log('found current path')
-                // console.log('moved to ', delta.newFile().path())
-                // console.log('moved to ', delta.oldFile().path())
-                //console.log('found id', delta.newFile().id())
                 return repo.getBlob(delta.newFile().id())
                   .then(function (blob) {
                     var data
