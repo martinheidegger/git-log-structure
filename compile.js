@@ -82,57 +82,53 @@ function addStory (result, newStory, previousCommit, parent, key) {
   }
 }
 
-function processHistoryEntry (repo, historyEntry, result, parser) {
-  var commitSha = historyEntry.commit.sha()
-  return repo.getCommit(commitSha)
-    .then(function (commit) {
-      var commitDate = commit.date()
-      return commit.getDiff()
-        .then(function (diffs) {
-          for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
-            var diff = diffs[diffNr]
-            var deltas = diff.numDeltas()
-            for (var i = 0; i < deltas; i++) {
-              var delta = diff.getDelta(i)
-              var newPath = delta.newFile().path()
-              if (result.path === newPath) {
-                for (var j = 0; j < deltas; j++) {
-                  if (i !== j) {
-                    var otherDelta = diff.getDelta(j)
-                    if (otherDelta.oldFile().id().cmp(delta.newFile().id()) === 0) {
-                      // It moved! See: https://github.com/nodegit/nodegit/issues/1116
-                      result.path = otherDelta.newFile().path()
-                      return walkPath(repo, result, commitSha, true, parser)
-                    }
-                  }
+function processCommit (repo, commit, result, parser) {
+  var commitDate = commit.date()
+  return commit.getDiff()
+    .then(function (diffs) {
+      for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
+        var diff = diffs[diffNr]
+        var deltas = diff.numDeltas()
+        for (var i = 0; i < deltas; i++) {
+          var delta = diff.getDelta(i)
+          var newPath = delta.newFile().path()
+          if (result.path === newPath) {
+            for (var j = 0; j < deltas; j++) {
+              if (i !== j) {
+                var otherDelta = diff.getDelta(j)
+                if (otherDelta.oldFile().id().cmp(delta.newFile().id()) === 0) {
+                  // It moved! See: https://github.com/nodegit/nodegit/issues/1116
+                  result.path = otherDelta.newFile().path()
+                  return walkPath(repo, result, commit.sha(), true, parser)
                 }
-                return repo.getBlob(delta.newFile().id())
-                  .then(function (blob) {
-                    var targetPath = delta.newFile().path()
-                    var data = parser(targetPath, blob.content())
-                    result.path = targetPath
-                    var currentTime = commitDate.getTime()
-                    var story = toStoryObject(data, result.commits ? result.commits.length : 0)
-                    if (!result.commits) {
-                      story.path = result.path
-                      story.commits = []
-                      result = story
-                    } else {
-                      addStory(result, story, result.commits.length - 1)
-                    }
-                    result.commits.push({
-                      time: currentTime,
-                      sha: commit.sha(),
-                      message: commit.message(),
-                      path: result.path
-                    })
-                    return result
-                  })
               }
             }
+            return repo.getBlob(delta.newFile().id())
+              .then(function (blob) {
+                var targetPath = delta.newFile().path()
+                var data = parser(targetPath, blob.content())
+                result.path = targetPath
+                var currentTime = commitDate.getTime()
+                var story = toStoryObject(data, result.commits ? result.commits.length : 0)
+                if (!result.commits) {
+                  story.path = result.path
+                  story.commits = []
+                  result = story
+                } else {
+                  addStory(result, story, result.commits.length - 1)
+                }
+                result.commits.push({
+                  time: currentTime,
+                  sha: commit.sha(),
+                  message: commit.message(),
+                  path: result.path
+                })
+                return result
+              })
           }
-          return Promise.reject(new Error('No diff for ' + result.path + ' found in commit ' + commit.sha()))
-        })
+        }
+      }
+      return Promise.reject(new Error('No diff for ' + result.path + ' found in commit ' + commit.sha()))
     })
 }
 
@@ -141,7 +137,11 @@ function processHistoryEntries (repo, historyEntries, result, parser) {
     return result.commits ? result : null
   } else {
     var errorMemo = null
-    return processHistoryEntry(repo, historyEntries.shift(), result, parser)
+    var historyEntry = historyEntries.shift()
+    return repo.getCommit(historyEntry.commit.sha())
+      .then(function (commit) {
+        return processCommit(repo, commit, result, parser)
+      })
       .catch(function (error) {
         errorMemo = error
         return result
