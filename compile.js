@@ -1,15 +1,6 @@
 'use strict'
 const git = require('nodegit')
 const last = require('lodash.last')
-const path = require('path')
-var jsYaml
-
-function getRepo (path, repo) {
-  if (repo) {
-    return Promise.resolve(repo)
-  }
-  return git.Repository.open('.')
-}
 
 function toStoryObject (value, commit) {
   if (typeof value === 'object' && value !== null) {
@@ -91,7 +82,7 @@ function addStory (result, newStory, previousCommit, parent, key) {
   }
 }
 
-function processHistoryEntry (repo, historyEntry, result) {
+function processHistoryEntry (repo, historyEntry, result, parser) {
   var commitSha = historyEntry.commit.sha()
   return repo.getCommit(commitSha)
     .then(function (commit) {
@@ -111,22 +102,14 @@ function processHistoryEntry (repo, historyEntry, result) {
                     if (otherDelta.oldFile().id().cmp(delta.newFile().id()) === 0) {
                       // It moved! See: https://github.com/nodegit/nodegit/issues/1116
                       result.path = otherDelta.newFile().path()
-                      return walkPath(repo, result, commitSha, true)
+                      return walkPath(repo, result, commitSha, true, parser)
                     }
                   }
                 }
                 return repo.getBlob(delta.newFile().id())
                   .then(function (blob) {
-                    var data
                     var targetPath = delta.newFile().path()
-                    if (/\.ya?ml$/ig.test(path.extname(targetPath))) {
-                      if (!jsYaml) {
-                        jsYaml = require('js-yaml')
-                      }
-                      data = jsYaml.load(blob.content().toString())
-                    } else {
-                      data = JSON.parse(blob.content())
-                    }
+                    var data = parser(targetPath, blob.content())
                     result.path = targetPath
                     var currentTime = commitDate.getTime()
                     var story = toStoryObject(data, result.commits ? result.commits.length : 0)
@@ -153,30 +136,29 @@ function processHistoryEntry (repo, historyEntry, result) {
     })
 }
 
-function processHistoryEntries (repo, historyEntries, path, result) {
+function processHistoryEntries (repo, historyEntries, result, parser) {
   if (historyEntries.length === 0) {
     return result.commits ? result : null
   } else {
     var errorMemo = null
-    return processHistoryEntry(repo, historyEntries.shift(), result)
+    return processHistoryEntry(repo, historyEntries.shift(), result, parser)
       .catch(function (error) {
         errorMemo = error
         return result
       })
-      .then(function (result) {
+      .then(function (newResult) {
         // Recursive! Weeee
-        return processHistoryEntries(repo, historyEntries, result.path, result) || result
+        return processHistoryEntries(repo, historyEntries, newResult, parser) || newResult
       })
-      .then(function (result) {
-        if (result.length === 0 && errorMemo) {
+      .then(function (newResult) {
+        if (newResult.length === 0 && errorMemo) {
           return Promise.reject(errorMemo)
         }
-        return result
+        return newResult
       })
   }
 }
-function walkPath (repo, result, commit, skip) {
-  // console.log('walking from ', commit, 'for', result.path)
+function walkPath (repo, result, commit, skip, parser) {
   var walker = repo.createRevWalk()
   walker.sorting(git.Revwalk.SORT.TIME)
   if (commit) {
@@ -193,18 +175,26 @@ function walkPath (repo, result, commit, skip) {
     if (skip) {
       historyEntries.shift()
     }
-    return processHistoryEntries(repo, historyEntries, result.path, result)
+    return processHistoryEntries(repo, historyEntries, result, parser)
   })
 }
 
-module.exports = function compile (path, repo) {
-  return getRepo(path, repo)
-    .then(function (repo) {
-      return walkPath(repo, {
-        path: path
-      }).then(function (story) {
-        story.path = path
-        return story
-      })
+function compileWithRepo (filePath, repo, parser) {
+  return walkPath(repo, { path: filePath }, null, false, parser || require('./defaultParser.js'))
+    .then(function (story) {
+      // The story's path changes during the walkPath operation
+      // After everything is done lets reset it to original path
+      story.path = filePath
+      return story
     })
+}
+
+module.exports = function compile (filePath, repo, parser) {
+  if (!repo) {
+    return git.Repository.open('.')
+      .then(function (repo) {
+        return compileWithRepo(filePath, repo, parser)
+      })
+  }
+  return compileWithRepo(filePath, repo, parser)
 }
