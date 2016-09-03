@@ -102,10 +102,12 @@ function processCommit (repo, commit, result, parser) {
                 }
               }
             }
+            var targetPath = delta.newFile().path()
             return repo.getBlob(delta.newFile().id())
               .then(function (blob) {
-                var targetPath = delta.newFile().path()
-                var data = parser(targetPath, blob.content())
+                return parser(targetPath, blob.content())
+              })
+              .then(function (data) {
                 result.path = targetPath
                 var story = toStoryObject(data, result.commits ? result.commits.length : 0)
                 if (!result.commits) {
