@@ -1,15 +1,17 @@
 {
-  "name": "structural-age",
+  "name": "git-log-structure",
   "version": "1.0.0",
-  "description": "",
+  "description": "The a log for every property in a file version-managed by git.",
   "main": "index.js",
   "scripts": {
     "test": "standard && tap -- test/*.js",
     "lint": "standard",
     "quick": "tap -- test/*.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "git", "log", "analyze", "age", "history", "details"
+  ],
+  "author": "Martin Heidegger <martin.heidegger@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "standard": "^7.1.0",
