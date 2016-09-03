@@ -83,7 +83,6 @@ function addStory (result, newStory, previousCommit, parent, key) {
 }
 
 function processCommit (repo, commit, result, parser) {
-  var commitDate = commit.date()
   return commit.getDiff()
     .then(function (diffs) {
       for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
@@ -108,7 +107,6 @@ function processCommit (repo, commit, result, parser) {
                 var targetPath = delta.newFile().path()
                 var data = parser(targetPath, blob.content())
                 result.path = targetPath
-                var currentTime = commitDate.getTime()
                 var story = toStoryObject(data, result.commits ? result.commits.length : 0)
                 if (!result.commits) {
                   story.path = result.path
@@ -118,7 +116,7 @@ function processCommit (repo, commit, result, parser) {
                   addStory(result, story, result.commits.length - 1)
                 }
                 result.commits.push({
-                  time: currentTime,
+                  time: commit.date().getTime(),
                   sha: commit.sha(),
                   message: commit.message(),
                   path: result.path
