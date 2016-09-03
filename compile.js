@@ -89,10 +89,16 @@ function addStory (result, newStory, previousCommit, parent, key) {
     before.from = newStory.tree
     result.history.push(newStory.history[0])
   } else if (result.value !== newStory.value) {
-    before = last(result.history)
-    before.type = 'modified'
-    before.from = newStory.value
-    result.history.push(newStory.history[0])
+    var beforeBefore = result.history[result.history.length - 2]
+    if (!beforeBefore || beforeBefore.type !== 'modified' || beforeBefore.from !== newStory.value) {
+      before = last(result.history)
+      before.type = 'modified'
+      before.from = newStory.value
+      result.history.push(newStory.history[0])
+    } else {
+      before = last(result.history)
+      before.commit++
+    }
   } else {
     before = last(result.history)
     before.commit++
@@ -125,14 +131,14 @@ function processHistoryEntry (repo, historyEntry, result) {
                   }
                 }
                 //console.log('found current path')
-                result.path = delta.oldFile().path()
                 // console.log('moved to ', delta.newFile().path())
                 // console.log('moved to ', delta.oldFile().path())
                 //console.log('found id', delta.newFile().id())
                 return repo.getBlob(delta.newFile().id())
                   .then(function (blob) {
                     var data
-                    if (/\.ya?ml$/ig.test(path.extname(result.path))) {
+                    var targetPath = delta.newFile().path()
+                    if (/\.ya?ml$/ig.test(path.extname(targetPath))) {
                       if (!jsYaml) {
                         jsYaml = require('js-yaml')
                       }
@@ -140,6 +146,7 @@ function processHistoryEntry (repo, historyEntry, result) {
                     } else {
                       data = JSON.parse(blob.content())
                     }
+                    result.path = targetPath
                     var currentTime = commitDate.getTime()
                     var story = toStoryObject(data, result.commits ? result.commits.length : 0)
                     if (!result.commits) {
@@ -169,10 +176,21 @@ function processHistoryEntries (repo, historyEntries, path, result) {
   if (historyEntries.length === 0) {
     return result.commits ? result : null
   } else {
+    var errorMemo = null
     return processHistoryEntry(repo, historyEntries.shift(), result)
+      .catch(function (error) {
+        errorMemo = error
+        return result
+      })
       .then(function (result) {
         // Recursive! Weeee
         return processHistoryEntries(repo, historyEntries, result.path, result) || result
+      })
+      .then(function (result) {
+        if (result.length === 0 && errorMemo) {
+          return Promise.reject(errorMemo)
+        }
+        return result
       })
   }
 }

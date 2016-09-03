@@ -4,11 +4,56 @@ var compile = require('../compile')
 var path = require('path')
 var fs = require('fs')
 
+function assertCommitsExist (t, commits, data, name, usedCommits) {
+  if (!usedCommits) {
+    usedCommits = {}
+  }
+  var formerCommit = -1
+  data.history.forEach(function (historyEntry, index) {
+    if (historyEntry.commit < formerCommit) {
+      t.fail(name + '\'s history entry #' + index + ' is in wrong order.')
+    }
+    formerCommit = historyEntry.commit
+    if (historyEntry.commit > commits.length) {
+      t.fail('The commit #' + historyEntry.commit + ' of ' + name + '\'s history entry #' + index + ' does not exist.')
+    }
+    usedCommits[formerCommit] = true
+  })
+  if (data.tree) {
+    Object.keys(data.tree).forEach(function (treeKey) {
+      assertCommitsExist(t, commits, data.tree[treeKey], name + '.' + treeKey, usedCommits)
+    })
+  }
+  return usedCommits
+}
+
+function assertCommitsInHistoricOrder (t, commits) {
+  var formerCommitTime = Number.MAX_VALUE
+  commits.forEach(function (commit, commitIndex) {
+    if (commit.time > formerCommitTime) {
+      t.fail('The commit #' + commitIndex + ' is out of order.')
+    }
+    formerCommitTime = commit.time
+  })
+}
+
+function assertCommitsUsed (t, commits, usedCommits) {
+  commits.forEach(function (commit, commitIndex) {
+    if (!usedCommits[commitIndex]) {
+      t.fail('The commit #' + commitIndex + ' is unused.')
+    }
+  })
+}
+
 function compareCompiled (t, target) {
   var expected = JSON.parse(fs.readFileSync(path.join(__dirname, target, 'expected.json')))
   return compile('test/' + target + '/test.json')
     .then(function (data) {
       t.deepEqual(data, expected)
+      const commits = data.commits
+      assertCommitsInHistoricOrder(t, commits)
+      const usedCommits = assertCommitsExist(t, commits, data, '$')
+      assertCommitsUsed(t, commits, usedCommits)
       t.end()
     })
     .catch(function (err) {
@@ -48,6 +93,9 @@ test('A renamed file', function (t) {
 })
 test('A complexly renamed file', function (t) {
   return compareCompiled(t, 'data/multiple-renamings')
+})
+test('A file where each properties were changed in turn twice', function (t) {
+  return compareCompiled(t, 'data/complex_modification')
 })
 test('A simple yaml file', function (t) {
   var target = 'data/simple_yaml'
