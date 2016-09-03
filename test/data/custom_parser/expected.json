@@ -1,0 +1,28 @@
+{
+  "path": "test/data/custom_parser/test.json",
+  "tree": {
+    "a": {
+      "value": "1:2",
+      "history": [
+        {
+          "type": "added",
+          "commit": 0
+        }
+      ]
+    }
+  },
+  "commits": [
+    {
+      "path": "test/data/custom_parser/test.json",
+      "time": 1472922734000,
+      "sha": "56ec2ce1651381bca5c3e8db980ca322871f6f17",
+      "message": "Added custom file.\n"
+    }
+  ],
+  "history": [
+    {
+      "type": "added",
+      "commit": 0
+    }
+  ]
+}

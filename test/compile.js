@@ -45,9 +45,9 @@ function assertCommitsUsed (t, commits, usedCommits) {
   })
 }
 
-function compareCompiled (t, target) {
+function compareCompiled (t, target, parser) {
   var expected = JSON.parse(fs.readFileSync(path.join(__dirname, target, 'expected.json')))
-  return compile('test/' + target + '/test.json')
+  return compile('test/' + target + '/test.json', null, parser)
     .then(function (data) {
       t.deepEqual(data, expected)
       const commits = data.commits
@@ -109,6 +109,13 @@ test('A simple yaml file', function (t) {
       t.fail(err)
       t.end()
     })
+})
+test('A custom parser', function (t) {
+  return compareCompiled(t, 'data/custom_parser', function (filePath, blob) {
+    return {
+      a: blob.toString()
+    }
+  })
 })
 test('A file that never existed', function (t) {
   return compile('data/never_existed/test.json')
