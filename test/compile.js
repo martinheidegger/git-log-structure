@@ -117,6 +117,13 @@ test('A custom parser', function (t) {
     }
   })
 })
+test('A custom parser returning a Promise', function (t) {
+  return compareCompiled(t, 'data/custom_parser', function (filePath, blob) {
+    return Promise.resolve({
+      a: blob.toString()
+    })
+  })
+})
 test('A file that never existed', function (t) {
   return compile('data/never_existed/test.json')
     .then(function (data) {
