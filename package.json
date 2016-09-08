@@ -4,9 +4,9 @@
   "description": "The a log for every property in a file version-managed by git.",
   "main": "index.js",
   "scripts": {
-    "test": "standard && tap -- test/*.js",
+    "test": "standard && tap --cov test/*.js",
     "lint": "standard",
-    "quick": "tap -- test/*.js"
+    "quick": "tap test/*.js"
   },
   "keywords": [
     "git", "log", "analyze", "age", "history", "details"
