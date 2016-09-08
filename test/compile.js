@@ -110,6 +110,9 @@ test('A simple yaml file', function (t) {
       t.end()
     })
 })
+test('A file that was broken and later fixed', function (t) {
+  return compareCompiled(t, 'data/broken_file_fixed')
+})
 test('A unparsable file', function (t) {
   return compile('test/data/broken_file/test.json')
     .then(function (data) {
