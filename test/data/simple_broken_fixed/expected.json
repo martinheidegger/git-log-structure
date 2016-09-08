@@ -1,0 +1,39 @@
+{
+  "path": "test/data/simple_broken_fixed/test.json",
+  "tree": {
+    "a": {
+      "value": 2,
+      "history": [
+        {
+          "type": "modified",
+          "from": 1,
+          "commit": 0
+        },
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    }
+  },
+  "commits": [
+    {
+      "path": "test/data/simple_broken_fixed/test.json",
+      "time": 1473327981000,
+      "sha": "74e1ab00a58ac38b766e5dbef8cbeb69789ac88c",
+      "message": "Finally fixed the file again with a different value.\n"
+    },
+    {
+      "path": "test/data/simple_broken_fixed/test.json",
+      "time": 1473327942000,
+      "sha": "c1cdb9a0148bc3db30b7ba76df827883a71b6f34",
+      "message": "Added a simple file that works and will be broken next.\n"
+    }
+  ],
+  "history": [
+    {
+      "type": "added",
+      "commit": 1
+    }
+  ]
+}
