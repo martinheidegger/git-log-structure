@@ -9,7 +9,12 @@
     "quick": "tap test/*.js"
   },
   "keywords": [
-    "git", "log", "analyze", "age", "history", "details"
+    "git",
+    "log",
+    "analyze",
+    "age",
+    "history",
+    "details"
   ],
   "author": "Martin Heidegger <martin.heidegger@gmail.com>",
   "license": "ISC",
