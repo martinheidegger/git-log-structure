@@ -110,6 +110,17 @@ test('A simple yaml file', function (t) {
       t.end()
     })
 })
+test('A unparsable file', function (t) {
+  return compile('test/data/broken_file/test.json')
+    .then(function (data) {
+      t.fail(new Error('It was possible to parse a broken file.'))
+      t.end()
+    })
+    .catch(function (err) {
+      t.equal(err.code, 'EPARSE')
+      t.end()
+    })
+})
 test('A custom parser', function (t) {
   return compareCompiled(t, 'data/custom_parser', function (filePath, blob) {
     return {

@@ -107,6 +107,12 @@ function processCommit (repo, commit, result, parser) {
               .then(function (blob) {
                 return parser(targetPath, blob.content())
               })
+              .catch(function (err) {
+                var parseErr = new Error('EPARSE: Error while parsing: ' + targetPath + '\n  ' + err.message)
+                parseErr.stack = parseErr.stack + '\n' + err.stack
+                parseErr.code = 'EPARSE'
+                return Promise.reject(parseErr)
+              })
               .then(function (data) {
                 result.path = targetPath
                 var story = toStoryObject(data, result.commits ? result.commits.length : 0)
@@ -151,7 +157,7 @@ function processHistoryEntries (repo, historyEntries, result, parser) {
         return processHistoryEntries(repo, historyEntries, newResult, parser) || newResult
       })
       .then(function (newResult) {
-        if (newResult.length === 0 && errorMemo) {
+        if (!newResult.history && errorMemo) {
           return Promise.reject(errorMemo)
         }
         return newResult
