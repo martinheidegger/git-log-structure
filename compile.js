@@ -94,11 +94,6 @@ function processCommit (repo, historyEntry, commit, result, parser) {
           var delta = diff.getDelta(i)
           if (newPath === delta.newFile().path()) {
             var id = delta.newFile().id()
-            if (id.iszero()) {
-              console.log('!!!!')
-              continue
-              id = delta.oldFile().id()
-            }
             return repo.getBlob(id)
               .then(function (blob) {
                 return parser(newPath, blob.content())
