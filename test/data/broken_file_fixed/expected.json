@@ -21,7 +21,12 @@
   "errors": [
     {
       "code": "EPARSE",
-      "name": "ParseError"
+      "name": "ParseError",
+      "commit": {
+        "message": "First committed broken version of file\n",
+        "sha": "ec51abea1f7ffd359841be7aebe97bf523d952a3",
+        "time": 1473327602000
+      }
     }
   ],
   "history": [

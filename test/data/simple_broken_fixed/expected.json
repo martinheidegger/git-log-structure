@@ -31,7 +31,12 @@
   "errors": [
     {
       "code": "EPARSE",
-      "name": "ParseError"
+      "name": "ParseError",
+      "commit": {
+        "message": "Broken the formerly added file.\n",
+        "sha": "5bc77856eb122d7df893649003329a4c088d1c0b",
+        "time": 1473327958000
+      }
     }
   ],
   "history": [

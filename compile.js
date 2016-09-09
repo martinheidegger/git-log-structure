@@ -82,6 +82,14 @@ function addStory (result, newStory, previousCommit, parent, key) {
   }
 }
 
+function commitInfo (commit) {
+  return {
+    time: commit.date().getTime(),
+    sha: commit.sha(),
+    message: commit.message()
+  }
+}
+
 function processCommit (repo, historyEntry, commit, result, parser) {
   var newPath = historyEntry.newName || result.path
   var oldPath = historyEntry.oldName || result.path
@@ -104,6 +112,7 @@ function processCommit (repo, historyEntry, commit, result, parser) {
                 parseErr.stack = parseErr.stack + '\n' + err.stack
                 parseErr.code = 'EPARSE'
                 parseErr.name = 'ParseError'
+                parseErr.commit = commitInfo(commit)
                 return Promise.reject(parseErr)
               })
               .then(function (data) {
@@ -115,11 +124,7 @@ function processCommit (repo, historyEntry, commit, result, parser) {
                 } else {
                   addStory(result, story, result.commits.length - 1)
                 }
-                result.commits.push({
-                  time: commit.date().getTime(),
-                  sha: commit.sha(),
-                  message: commit.message()
-                })
+                result.commits.push(commitInfo(commit))
                 if (oldPath && result.path !== oldPath) {
                   result.path = oldPath
                   result.history.splice(result.commits.length - 2, 0, {
@@ -202,6 +207,10 @@ function compileWithRepo (filePath, repo, parser) {
     })
 }
 
+// TODO: Refactor into options
+// TODO: Option to ignore "deleted" properties
+// TODO: Option to limit the history steps (tricky in combination with ignoring deleted properties)
+// TODO: Option for multiple files with optimized commit-loading behaviour
 module.exports = function compile (filePath, repo, parser) {
   if (!repo) {
     return git.Repository.open('.')
