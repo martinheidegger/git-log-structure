@@ -100,8 +100,10 @@ function processCommit (repo, historyEntry, commit, result, parser) {
               })
               .catch(function (err) {
                 var parseErr = new Error('EPARSE: Error while parsing: ' + newPath + '\n  ' + err.message)
+                parseErr.message = parseErr.message.toString()
                 parseErr.stack = parseErr.stack + '\n' + err.stack
                 parseErr.code = 'EPARSE'
+                parseErr.name = 'ParseError'
                 return Promise.reject(parseErr)
               })
               .then(function (data) {
@@ -153,6 +155,13 @@ function processHistoryEntries (repo, historyEntries, result, parser) {
       })
       .then(function (newResult) {
         // Recursive! Weeee
+        if (errorMemo) {
+          var errors = result.errors
+          if (!errors) {
+            errors = result.errors = []
+          }
+          errors.push(errorMemo)
+        }
         return processHistoryEntries(repo, historyEntries, newResult, parser) || newResult
       })
       .then(function (newResult) {
