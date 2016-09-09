@@ -11,7 +11,7 @@
         },
         {
           "type": "added",
-          "commit": 1
+          "commit": 3
         }
       ]
     }
@@ -24,6 +24,18 @@
       "message": "Modified the final test once more (for good measure)\n"
     },
     {
+      "path": "test/data/multiple-renamings/test.json",
+      "time": 1472822980000,
+      "sha": "7e1195e6f6edb970a2c1a388558349a6026eaa4e",
+      "message": "Renamed once more for fitting in test cases\n"
+    },
+    {
+      "path": "test/data/multiple-renamings/test-x.json",
+      "time": 1472822878000,
+      "sha": "99f117b57d8da1f116831a855cf29d88d9659c60",
+      "message": "Renamed in opposite order to make sure that the sorting isn't off\n"
+    },
+    {
       "path": "test/data/multiple-renamings/test-c.json",
       "message": "Added multiple files to be renamed.\n",
       "time": 1472822841000,
@@ -32,8 +44,18 @@
   ],
   "history": [
     {
-      "type": "added",
+      "type": "moved",
+      "oldPath": "test/data/multiple-renamings/test-x.json",
       "commit": 1
+    },
+    {
+      "type": "moved",
+      "oldPath": "test/data/multiple-renamings/test-c.json",
+      "commit": 2
+    },
+    {
+      "type": "added",
+      "commit": 3
     }
   ]
 }

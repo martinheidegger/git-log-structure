@@ -7,16 +7,22 @@
         {
           "type": "modified",
           "from": 1,
-          "commit": 0
+          "commit": 1
         },
         {
           "type": "added",
-          "commit": 1
+          "commit": 2
         }
       ]
     }
   },
   "commits": [
+    {
+      "path": "test/data/renamed/test.json",
+      "time": 1472810319000,
+      "sha": "e8cb8c4a33566a4d977011a325f7d07c161fa126",
+      "message": "Moved changed file to a new name\n"
+    },
     {
       "path": "test/data/renamed/test-a.json",
       "time": 1472810281000,
@@ -32,8 +38,13 @@
   ],
   "history": [
     {
+      "type": "moved",
+      "oldPath": "test/data/renamed/test-a.json",
+      "commit": 0
+    },
+    {
       "type": "added",
-      "commit": 1
+      "commit": 2
     }
   ]
 }

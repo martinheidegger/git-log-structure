@@ -1,0 +1,62 @@
+{
+  "path": "test/data/simple_renamed_modified/test.json",
+  "tree": {
+    "a": {
+      "value": 2,
+      "history": [
+        {
+          "from": 1,
+          "type": "modified",
+          "commit": 0
+        },
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    },
+    "b": {
+      "value": 2,
+      "history": [
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    },
+    "c": {
+      "value": 3,
+      "history": [
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    }
+  },
+  "commits": [
+    {
+      "path": "test/data/simple_renamed_modified/test.json",
+      "time": 1473328581000,
+      "sha": "f6cac6b47d3199373af6e5590c7010485a4210ec",
+      "message": "Renamed and changed property in one strike.\n"
+    },
+    {
+      "path": "test/data/simple_renamed_modified/test-a.json",
+      "time": 1473328554000,
+      "sha": "6e34ed93bd2c32c01d22d3fceb10c933d09e1f5a",
+      "message": "Added a simple file that will be renamed.\n"
+    }
+  ],
+  "history": [
+    {
+      "type": "moved",
+      "oldPath": "test/data/simple_renamed_modified/test-a.json",
+      "commit": 0
+    },
+    {
+      "type": "added",
+      "commit": 1
+    }
+  ]
+}

@@ -82,7 +82,9 @@ function addStory (result, newStory, previousCommit, parent, key) {
   }
 }
 
-function processCommit (repo, commit, result, parser) {
+function processCommit (repo, historyEntry, commit, result, parser) {
+  var newPath = historyEntry.newName || result.path
+  var oldPath = historyEntry.oldName || result.path
   return commit.getDiff()
     .then(function (diffs) {
       for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
@@ -90,31 +92,24 @@ function processCommit (repo, commit, result, parser) {
         var deltas = diff.numDeltas()
         for (var i = 0; i < deltas; i++) {
           var delta = diff.getDelta(i)
-          var newPath = delta.newFile().path()
-          if (result.path === newPath) {
-            for (var j = 0; j < deltas; j++) {
-              if (i !== j) {
-                var otherDelta = diff.getDelta(j)
-                if (otherDelta.oldFile().id().cmp(delta.newFile().id()) === 0) {
-                  // It moved! See: https://github.com/nodegit/nodegit/issues/1116
-                  result.path = otherDelta.newFile().path()
-                  return walkPath(repo, result, commit.sha(), true, parser)
-                }
-              }
+          if (newPath === delta.newFile().path()) {
+            var id = delta.newFile().id()
+            if (id.iszero()) {
+              console.log('!!!!')
+              continue
+              id = delta.oldFile().id()
             }
-            var targetPath = delta.newFile().path()
-            return repo.getBlob(delta.newFile().id())
+            return repo.getBlob(id)
               .then(function (blob) {
-                return parser(targetPath, blob.content())
+                return parser(newPath, blob.content())
               })
               .catch(function (err) {
-                var parseErr = new Error('EPARSE: Error while parsing: ' + targetPath + '\n  ' + err.message)
+                var parseErr = new Error('EPARSE: Error while parsing: ' + newPath + '\n  ' + err.message)
                 parseErr.stack = parseErr.stack + '\n' + err.stack
                 parseErr.code = 'EPARSE'
                 return Promise.reject(parseErr)
               })
               .then(function (data) {
-                result.path = targetPath
                 var story = toStoryObject(data, result.commits ? result.commits.length : 0)
                 if (!result.commits) {
                   story.path = result.path
@@ -129,6 +124,15 @@ function processCommit (repo, commit, result, parser) {
                   message: commit.message(),
                   path: result.path
                 })
+                if (oldPath && result.path !== oldPath) {
+                  result.path = oldPath
+                  result.history.splice(result.commits.length - 2, 0, {
+                    type: "moved",
+                    oldPath: oldPath,
+                    commit: result.commits.length - 1
+                  })
+                  return walkPath(repo, result, commit.sha(), true, parser)
+                }
                 return result
               })
           }
@@ -146,7 +150,7 @@ function processHistoryEntries (repo, historyEntries, result, parser) {
     var historyEntry = historyEntries.shift()
     return repo.getCommit(historyEntry.commit.sha())
       .then(function (commit) {
-        return processCommit(repo, commit, result, parser)
+        return processCommit(repo, historyEntry, commit, result, parser)
       })
       .catch(function (error) {
         errorMemo = error

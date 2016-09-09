@@ -116,6 +116,9 @@ test('A file that was added broken and later fixed', function (t) {
 test('A simple file that was broken and later fixed', function (t) {
   return compareCompiled(t, 'data/simple_broken_fixed')
 })
+test('A simple file that was renamed and modified at the same commit', function (t) {
+  return compareCompiled(t, 'data/simple_renamed_modified')
+})
 test('A unparsable file', function (t) {
   return compile('test/data/broken_file/test.json')
     .then(function (data) {
