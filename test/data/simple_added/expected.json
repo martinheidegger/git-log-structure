@@ -28,13 +28,11 @@
   ],
   "commits": [
     {
-      "path": "test/data/simple_added/test.json",
       "time": 1472745086000,
       "sha": "b698c48ce6039aff453e47791de71e01ab68e532",
       "message": "second commit wth added fields\n"
     },
     {
-      "path": "test/data/simple_added/test.json",
       "time": 1472745051000,
       "sha": "ccb6991ed1ed6d6126c12ccce658fa27a26ef803",
       "message": "first commit with two files\n"

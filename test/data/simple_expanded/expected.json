@@ -43,13 +43,11 @@
   ],
   "commits": [
     {
-      "path": "test/data/simple_expanded/test.json",
       "time": 1472777932000,
       "sha": "9d61f913ee82839f9c740b46523c502b388938cd",
       "message": "Last commit of file with a property that is expanded to an object.\n"
     },
     {
-      "path": "test/data/simple_expanded/test.json",
       "time": 1472777875000,
       "sha": "1a7ebfd15d6dc9671d534b14a764091c7d67f247",
       "message": "First commit of file with a property that is expanded to an object.\n"

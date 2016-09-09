@@ -118,8 +118,7 @@ function processCommit (repo, historyEntry, commit, result, parser) {
                 result.commits.push({
                   time: commit.date().getTime(),
                   sha: commit.sha(),
-                  message: commit.message(),
-                  path: result.path
+                  message: commit.message()
                 })
                 if (oldPath && result.path !== oldPath) {
                   result.path = oldPath

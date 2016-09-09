@@ -13,10 +13,15 @@
   },
   "commits": [
     {
-      "path": "test/data/broken_file_fixed/test.json",
       "time": 1473327618000,
       "sha": "5cf4ef987525362965cd2c0495710c2441a3f281",
       "message": "Then commited fixed version of file.\n"
+    }
+  ],
+  "errors": [
+    {
+      "code": "EPARSE",
+      "name": "ParseError"
     }
   ],
   "history": [
