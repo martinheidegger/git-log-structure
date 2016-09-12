@@ -1,8 +1,9 @@
 'use strict'
 var test = require('tap').test
-var compile = require('../compile')
+var compile = require('../compile.js')
 var path = require('path')
 var fs = require('fs')
+var git = require('nodegit')
 
 function assertCommitsExist (t, commits, data, name, usedCommits) {
   if (!usedCommits) {
@@ -45,9 +46,9 @@ function assertCommitsUsed (t, commits, usedCommits) {
   })
 }
 
-function compareCompiled (t, target, parser) {
+function compareCompiled (t, target, parser, repo) {
   var expected = JSON.parse(fs.readFileSync(path.join(__dirname, target, 'expected.json')))
-  return compile('test/' + target + '/test.json', null, parser)
+  return compile('test/' + target + '/test.json', repo || null, parser)
     .then(function (data) {
       if (data.errors) {
         data.errors.forEach(function (error) {
@@ -116,6 +117,12 @@ test('A simple yaml file', function (t) {
       t.end()
     })
 })
+test('A simple file with a passed-in repo', function (t) {
+  return git.Repository.open('.')
+    .then(function (repo) {
+      return compareCompiled(t, 'data/simple', null, repo)
+    })
+})
 test('A file that was added broken and later fixed', function (t) {
   return compareCompiled(t, 'data/broken_file_fixed')
 })
@@ -136,6 +143,12 @@ test('A unparsable file', function (t) {
       t.end()
     })
 })
+// TODO: test('A file that was renamed and modified at the same time')
+// TODO: test('A custom parser with recursive objects')
+// TODO: test('A simple file which\'s property was renamed') <-- NP Hard
+// TODO: test('A file that change types inbetween')
+// TODO: test('A file was broken ')
+// TODO: test('A file that was not added yet (only in the file-system)')
 test('A custom parser', function (t) {
   return compareCompiled(t, 'data/custom_parser', function (filePath, blob) {
     return {
