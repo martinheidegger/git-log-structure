@@ -46,12 +46,9 @@ function assertCommitsUsed (t, commits, usedCommits) {
   })
 }
 
-function compareCompiled (t, target, parser, repo) {
+function compareCompiled (t, target, options) {
   var expected = JSON.parse(fs.readFileSync(path.join(__dirname, target, 'expected.json')))
-  return compile('test/' + target + '/test.json', {
-    repo: repo || null,
-    parser: parser
-  })
+  return compile('test/' + target + '/test.json', options)
     .then(function (data) {
       if (data.errors) {
         data.errors.forEach(function (error) {
@@ -123,7 +120,9 @@ test('A simple yaml file', function (t) {
 test('A simple file with a passed-in repo', function (t) {
   return git.Repository.open('.')
     .then(function (repo) {
-      return compareCompiled(t, 'data/simple', null, repo)
+      return compareCompiled(t, 'data/simple', {
+        repo: repo
+      })
     })
 })
 test('A file that was added broken and later fixed', function (t) {
@@ -152,9 +151,11 @@ test('A file that changed type', function (t) {
 // TODO: test('A custom parser with recursive objects')
 // TODO: test('A simple file which\'s property was renamed') <-- NP Hard
 test('A custom parser', function (t) {
-  return compareCompiled(t, 'data/custom_parser', function (filePath, blob) {
-    return {
-      a: blob.toString()
+  return compareCompiled(t, 'data/custom_parser', {
+    parser: function (filePath, blob) {
+      return {
+        a: blob.toString()
+      }
     }
   })
 })
@@ -185,11 +186,27 @@ test('A non-commited file', function (t) {
     })
 })
 test('A custom parser returning a Promise', function (t) {
-  return compareCompiled(t, 'data/custom_parser', function (filePath, blob) {
-    return Promise.resolve({
-      a: blob.toString()
-    })
+  return compareCompiled(t, 'data/custom_parser', {
+    parser: function (filePath, blob) {
+      return Promise.resolve({
+        a: blob.toString()
+      })
+    }
   })
+})
+test('A file that never existed', function (t) {
+  return compile('test/data/simple/test.json', {
+    limit: 1
+  })
+    .then(function (data) {
+      // The first commit from top doesn't contain 1
+      t.fail(new Error('Returned successfully, even though it is supposed to never have existed.'))
+      t.end()
+    })
+    .catch(function (err) {
+      t.equal(err.code, 'ENOENT')
+      t.end()
+    })
 })
 test('A file that never existed', function (t) {
   return compile('data/never_existed/test.json')

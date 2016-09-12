@@ -185,12 +185,12 @@ function walkPath (options, result, commit, skip) {
   var walker = options.repo.createRevWalk()
   walker.sorting(git.Revwalk.SORT.TIME)
   if (commit) {
-    walker.push(commit)
+  walker.push(commit)
   } else {
     walker.pushHead()
   }
   return walker
-    .fileHistoryWalk(result.path, 10000)
+    .fileHistoryWalk(result.path, options.limit)
     .then(function (historyEntries) {
       if (historyEntries.length === 0) {
         var err = new Error('ENOENT: file does not exist in repository \'' + result.path + '\'')
@@ -220,6 +220,7 @@ function compileWithRepo (filePath, options) {
 module.exports = function compile (filePath, options) {
   options = options || {}
   options.parser = options.parser || require('./defaultParser.js')
+  options.limit = options.limit || 2147483647 // 2^31 - 1 ... maximum acceptable value by git
 
   var repo = options.repo
   if (!repo) {
