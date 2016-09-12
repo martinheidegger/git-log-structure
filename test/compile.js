@@ -48,7 +48,10 @@ function assertCommitsUsed (t, commits, usedCommits) {
 
 function compareCompiled (t, target, parser, repo) {
   var expected = JSON.parse(fs.readFileSync(path.join(__dirname, target, 'expected.json')))
-  return compile('test/' + target + '/test.json', repo || null, parser)
+  return compile('test/' + target + '/test.json', {
+    repo: repo || null,
+    parser: parser
+  })
     .then(function (data) {
       if (data.errors) {
         data.errors.forEach(function (error) {
@@ -146,7 +149,6 @@ test('A unparsable file', function (t) {
 test('A file that changed type', function (t) {
   return compareCompiled(t, 'data/type_changer')
 })
-// TODO: test('A file that was renamed and modified at the same time')
 // TODO: test('A custom parser with recursive objects')
 // TODO: test('A simple file which\'s property was renamed') <-- NP Hard
 test('A custom parser', function (t) {

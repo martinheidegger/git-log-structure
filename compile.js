@@ -90,7 +90,7 @@ function commitInfo (commit) {
   }
 }
 
-function processCommit (repo, historyEntry, commit, result, parser) {
+function processCommit (options, historyEntry, commit, result) {
   var newPath = historyEntry.newName || result.path
   var oldPath = historyEntry.oldName || result.path
   return commit.getDiff()
@@ -102,14 +102,13 @@ function processCommit (repo, historyEntry, commit, result, parser) {
           var delta = diff.getDelta(deltaNr)
           if (newPath === delta.newFile().path()) {
             var id = delta.newFile().id()
-            return repo.getBlob(id)
+            return options.repo.getBlob(id)
               .then(function (blob) {
-                return parser(newPath, blob.content())
+                return options.parser(newPath, blob.content())
               })
               .catch(function (err) {
                 result.path = oldPath
                 var parseErr = new Error('EPARSE: Error while parsing: ' + newPath + '\n  ' + err.message)
-                parseErr.message = parseErr.message.toString()
                 parseErr.stack = parseErr.stack + '\n' + err.stack
                 parseErr.code = 'EPARSE'
                 parseErr.name = 'ParseError'
@@ -137,16 +136,17 @@ function processCommit (repo, historyEntry, commit, result, parser) {
     })
 }
 
-function processHistoryEntries (repo, historyEntries, result, parser) {
+function processHistoryEntries (options, historyEntries, result) {
   if (historyEntries.length === 0) {
     return result.commits ? result : null
   } else {
     var errorMemo = null
     var historyEntry = historyEntries.shift()
     var formerPath = result.path
-    return repo.getCommit(historyEntry.commit.sha())
+    return options.repo
+      .getCommit(historyEntry.commit.sha())
       .then(function (commit) {
-        return processCommit(repo, historyEntry, commit, result, parser)
+        return processCommit(options, historyEntry, commit, result)
       })
       .catch(function (error) {
         errorMemo = error
@@ -169,9 +169,9 @@ function processHistoryEntries (repo, historyEntries, result, parser) {
             oldPath: newResult.path,
             commit: newResult.commits.length - 1
           })
-          return walkPath(repo, newResult, last(newResult.commits).sha, true, parser)
+          return walkPath(options, newResult, last(newResult.commits).sha, true)
         }
-        return processHistoryEntries(repo, historyEntries, newResult, parser) || newResult
+        return processHistoryEntries(options, historyEntries, newResult) || newResult
       })
       .then(function (newResult) {
         if (!newResult.history && errorMemo) {
@@ -181,29 +181,31 @@ function processHistoryEntries (repo, historyEntries, result, parser) {
       })
   }
 }
-function walkPath (repo, result, commit, skip, parser) {
-  var walker = repo.createRevWalk()
+function walkPath (options, result, commit, skip) {
+  var walker = options.repo.createRevWalk()
   walker.sorting(git.Revwalk.SORT.TIME)
   if (commit) {
     walker.push(commit)
   } else {
     walker.pushHead()
   }
-  return walker.fileHistoryWalk(result.path, 10000).then(function (historyEntries) {
-    if (historyEntries.length === 0) {
-      var err = new Error('ENOENT: file does not exist in repository \'' + result.path + '\'')
-      err.code = 'ENOENT'
-      return Promise.reject(err)
-    }
-    if (skip) {
-      historyEntries.shift()
-    }
-    return processHistoryEntries(repo, historyEntries, result, parser)
-  })
+  return walker
+    .fileHistoryWalk(result.path, 10000)
+    .then(function (historyEntries) {
+      if (historyEntries.length === 0) {
+        var err = new Error('ENOENT: file does not exist in repository \'' + result.path + '\'')
+        err.code = 'ENOENT'
+        return Promise.reject(err)
+      }
+      if (skip) {
+        historyEntries.shift()
+      }
+      return processHistoryEntries(options, historyEntries, result)
+    })
 }
 
-function compileWithRepo (filePath, repo, parser) {
-  return walkPath(repo, { path: filePath }, null, false, parser || require('./defaultParser.js'))
+function compileWithRepo (filePath, options) {
+  return walkPath(options, { path: filePath }, null, false)
     .then(function (story) {
       // The story's path changes during the walkPath operation
       // After everything is done lets reset it to original path
@@ -212,16 +214,20 @@ function compileWithRepo (filePath, repo, parser) {
     })
 }
 
-// TODO: Refactor into options
 // TODO: Option to ignore "deleted" properties
 // TODO: Option to limit the history steps (tricky in combination with ignoring deleted properties)
 // TODO: Option for multiple files with optimized commit-loading behaviour
-module.exports = function compile (filePath, repo, parser) {
+module.exports = function compile (filePath, options) {
+  options = options || {}
+  options.parser = options.parser || require('./defaultParser.js')
+
+  var repo = options.repo
   if (!repo) {
     return git.Repository.open('.')
       .then(function (repo) {
-        return compileWithRepo(filePath, repo, parser)
+        options.repo = repo
+        return compileWithRepo(filePath, options)
       })
   }
-  return compileWithRepo(filePath, repo, parser)
+  return compileWithRepo(filePath, options)
 }
