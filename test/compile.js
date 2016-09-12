@@ -147,14 +147,38 @@ test('A unparsable file', function (t) {
 // TODO: test('A custom parser with recursive objects')
 // TODO: test('A simple file which\'s property was renamed') <-- NP Hard
 // TODO: test('A file that change types inbetween')
-// TODO: test('A file was broken ')
-// TODO: test('A file that was not added yet (only in the file-system)')
 test('A custom parser', function (t) {
   return compareCompiled(t, 'data/custom_parser', function (filePath, blob) {
     return {
       a: blob.toString()
     }
   })
+})
+test('A non-commited file', function (t) {
+  var pth = path.join(__dirname, 'data', 'not_commited', 'test.json')
+  try {
+    fs.unlinkSync(pth)
+  } catch (e) {
+    // no one cares
+  }
+  try {
+    fs.writeFileSync(pth, JSON.stringify({
+      a: 1
+    }, null, 2))
+  } catch (e) {
+    t.fail(e)
+    return
+  }
+  return compile('data/not_commited')
+    .then(function (data) {
+      t.fail(new Error('Returned successfully, even though it is supposed to have thrown an error.'))
+    })
+    .catch(function (err) {
+      // TODO: Consider throwing a different error or returning successfully
+      // alternatively can also allow for flag to switch between each option
+      t.equal(err.code, 'ENOENT')
+      t.end()
+    })
 })
 test('A custom parser returning a Promise', function (t) {
   return compareCompiled(t, 'data/custom_parser', function (filePath, blob) {
