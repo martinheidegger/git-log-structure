@@ -98,8 +98,8 @@ function processCommit (repo, historyEntry, commit, result, parser) {
       for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
         var diff = diffs[diffNr]
         var deltas = diff.numDeltas()
-        for (var i = 0; i < deltas; i++) {
-          var delta = diff.getDelta(i)
+        for (var deltaNr = 0; deltaNr < deltas; deltaNr++) {
+          var delta = diff.getDelta(deltaNr)
           if (newPath === delta.newFile().path()) {
             var id = delta.newFile().id()
             return repo.getBlob(id)
@@ -107,12 +107,14 @@ function processCommit (repo, historyEntry, commit, result, parser) {
                 return parser(newPath, blob.content())
               })
               .catch(function (err) {
+                result.path = oldPath
                 var parseErr = new Error('EPARSE: Error while parsing: ' + newPath + '\n  ' + err.message)
                 parseErr.message = parseErr.message.toString()
                 parseErr.stack = parseErr.stack + '\n' + err.stack
                 parseErr.code = 'EPARSE'
                 parseErr.name = 'ParseError'
                 parseErr.commit = commitInfo(commit)
+                parseErr.result = result // Result is passed to catch handler for the oldPath!
                 return Promise.reject(parseErr)
               })
               .then(function (data) {
@@ -125,15 +127,7 @@ function processCommit (repo, historyEntry, commit, result, parser) {
                   addStory(result, story, result.commits.length - 1)
                 }
                 result.commits.push(commitInfo(commit))
-                if (oldPath && result.path !== oldPath) {
-                  result.path = oldPath
-                  result.history.splice(result.commits.length - 2, 0, {
-                    type: 'moved',
-                    oldPath: oldPath,
-                    commit: result.commits.length - 1
-                  })
-                  return walkPath(repo, result, commit.sha(), true, parser)
-                }
+                result.path = oldPath
                 return result
               })
           }
@@ -149,13 +143,16 @@ function processHistoryEntries (repo, historyEntries, result, parser) {
   } else {
     var errorMemo = null
     var historyEntry = historyEntries.shift()
+    var formerPath = result.path
     return repo.getCommit(historyEntry.commit.sha())
       .then(function (commit) {
         return processCommit(repo, historyEntry, commit, result, parser)
       })
       .catch(function (error) {
         errorMemo = error
-        return result
+        var errResult = error.result
+        delete error.result
+        return errResult || result
       })
       .then(function (newResult) {
         // Recursive! Weeee
@@ -165,6 +162,14 @@ function processHistoryEntries (repo, historyEntries, result, parser) {
             errors = result.errors = []
           }
           errors.push(errorMemo)
+        }
+        if (newResult.path !== formerPath) {
+          newResult.history.splice(newResult.commits.length - 2, 0, {
+            type: 'moved',
+            oldPath: newResult.path,
+            commit: newResult.commits.length - 1
+          })
+          return walkPath(repo, newResult, last(newResult.commits).sha, true, parser)
         }
         return processHistoryEntries(repo, historyEntries, newResult, parser) || newResult
       })

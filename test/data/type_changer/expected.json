@@ -1,0 +1,62 @@
+{
+  "path": "test/data/type_changer/test.json",
+  "tree": {
+    "a": {
+      "value": 1,
+      "history": [
+        {
+          "type": "added",
+          "commit": 2
+        }
+      ]
+    },
+    "b": {
+    	"value": 2,
+      "history": [
+        {
+          "type": "added",
+          "commit": 1
+        }
+      ]
+    }
+  },
+  "commits": [
+    {
+      "time": 1473682599000,
+      "sha": "2f793336008e5996a21f0d78086e026c34d6e24c",
+      "message": "Changed the format\n"
+    },
+    {
+      "time": 1473682599000,
+      "sha": "57ee1919df0a10cad7bee5670bf41694e572d175",
+      "message": "added property to yaml\n"
+    },
+    {
+      "time": 1473672317000,
+      "sha": "dbd70d3e61d83ce3ca4e4c31a41f15c6fa34fee1",
+      "message": "add file first as yaml\n"
+    }
+  ],
+  "errors": [
+    {
+      "code": "EPARSE",
+      "name": "ParseError",
+      "commit": {
+        "message": "Changed the file ending\n",
+        "sha": "8510da40b5b8e813a1437d2bb8343b51249c6e0b",
+        "time": 1473682599000
+      }
+    }
+  ],
+  "history": [
+    {
+      "type": "moved",
+      "oldPath": "test/data/type_changer/test.yml",
+      "commit": 0
+    },
+    {
+      "type": "added",
+      "commit": 2
+    }
+  ]
+}

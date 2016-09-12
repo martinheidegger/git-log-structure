@@ -143,10 +143,12 @@ test('A unparsable file', function (t) {
       t.end()
     })
 })
+test('A file that changed type', function (t) {
+  return compareCompiled(t, 'data/type_changer')
+})
 // TODO: test('A file that was renamed and modified at the same time')
 // TODO: test('A custom parser with recursive objects')
 // TODO: test('A simple file which\'s property was renamed') <-- NP Hard
-// TODO: test('A file that change types inbetween')
 test('A custom parser', function (t) {
   return compareCompiled(t, 'data/custom_parser', function (filePath, blob) {
     return {
