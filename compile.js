@@ -128,7 +128,7 @@ function processCommit (repo, historyEntry, commit, result, parser) {
                 if (oldPath && result.path !== oldPath) {
                   result.path = oldPath
                   result.history.splice(result.commits.length - 2, 0, {
-                    type: "moved",
+                    type: 'moved',
                     oldPath: oldPath,
                     commit: result.commits.length - 1
                   })
