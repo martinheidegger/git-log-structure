@@ -25,16 +25,57 @@ function toStoryObject (value, commit) {
   }
 }
 
+function addExpansionToEntry (currentEntry, nextEntry) {
+  // Expansion means that the history of the current entry
+  // ends with an object but it used to be a simple value
+  var before = last(currentEntry.history)
+  before.type = 'expanded'
+  before.from = nextEntry.value
+  currentEntry.history.push(nextEntry.history[0])
+}
+
+function addReductionToEntry (currentEntry, nextEntry) {
+  // Reduction means that the history of the current entry
+  // ends with a simple value but it used to be an object before
+  var before = last(currentEntry.history)
+  before.type = 'reduced'
+  before.from = nextEntry.tree
+  currentEntry.history.push(nextEntry.history[0])
+}
+
+function skipCommit (currentEntry) {
+  // Increments the commit count in order
+  var before = last(currentEntry.history)
+  before.commit++
+}
+
+function addModificationToEntry (currentEntry, nextEntry) {
+  // Modification means that the current entry has a different simple
+  // value than the next entry
+  var before = last(currentEntry.history)
+  before.type = 'modified'
+  before.from = nextEntry.value
+  currentEntry.history.push(nextEntry.history[0])
+}
+
+function addDeletedEntry (currentEntry, nextEntry, previousCommit, nextEntryKey) {
+  // A deleted entry means that an key existed in the next entry that
+  // doesn't exist in the current entry
+  currentEntry.tree[nextEntryKey] = {
+    value: undefined,
+    history: [
+      {type: 'deleted', commit: previousCommit, from: nextEntry.tree[nextEntryKey]},
+      nextEntry.history[0]
+    ]
+  }
+}
+
 function addStoryEntry (currentEntry, nextEntry, previousCommit, parent, key) {
-  var before
   if (!nextEntry) {
     // Nothing to do here, the currentEntry was added before
   } else if (currentEntry.tree) {
     if (!nextEntry.tree) {
-      before = last(currentEntry.history)
-      before.type = 'expanded'
-      before.from = nextEntry.value
-      currentEntry.history.push(nextEntry.history[0])
+      addExpansionToEntry(currentEntry, nextEntry)
     } else {
       var foundKeys = Object
         .keys(currentEntry.tree)
@@ -49,36 +90,21 @@ function addStoryEntry (currentEntry, nextEntry, previousCommit, parent, key) {
           return !foundKeys[nextEntryKey]
         })
         .forEach(function (nextEntryKey) {
-          currentEntry.tree[nextEntryKey] = {
-            value: undefined,
-            history: [
-              {type: 'deleted', commit: previousCommit, from: nextEntry.tree[nextEntryKey]},
-              nextEntry.history[0]
-            ]
-          }
+          addDeletedEntry(currentEntry, nextEntry, previousCommit, nextEntryKey)
         })
-      before = last(currentEntry.history)
-      before.commit++
+      skipCommit(currentEntry)
     }
   } else if (nextEntry.tree) {
-    before = last(currentEntry.history)
-    before.type = 'reduced'
-    before.from = nextEntry.tree
-    currentEntry.history.push(nextEntry.history[0])
+    addReductionToEntry(currentEntry, nextEntry)
   } else if (currentEntry.value !== nextEntry.value) {
     var beforeBefore = currentEntry.history[currentEntry.history.length - 2]
     if (!beforeBefore || beforeBefore.type !== 'modified' || beforeBefore.from !== nextEntry.value) {
-      before = last(currentEntry.history)
-      before.type = 'modified'
-      before.from = nextEntry.value
-      currentEntry.history.push(nextEntry.history[0])
+      addModificationToEntry(currentEntry, nextEntry)
     } else {
-      before = last(currentEntry.history)
-      before.commit++
+      skipCommit(currentEntry)
     }
   } else {
-    before = last(currentEntry.history)
-    before.commit++
+    skipCommit(currentEntry)
   }
 }
 
