@@ -71,42 +71,60 @@ function addDeletedEntry (currentEntry, nextEntry, previousCommit, nextEntryKey)
   }
 }
 
+function entryWasModified (currentEntry, nextEntry) {
+  if (currentEntry.value === nextEntry.value) {
+    return false
+  }
+  var beforeBefore = currentEntry.history[currentEntry.history.length - 2]
+  if (!beforeBefore) {
+    return true
+  }
+  if (beforeBefore.type !== 'modified') {
+    return true
+  }
+  if (beforeBefore.from !== nextEntry.value) {
+    return true
+  }
+  return false
+}
+
 function addStoryEntry (currentEntry, nextEntry, previousCommit, parent, key) {
   if (!nextEntry) {
     // Nothing to do here, the currentEntry was added before
-  } else if (currentEntry.tree) {
-    if (!nextEntry.tree) {
-      addExpansionToEntry(currentEntry, nextEntry)
-    } else {
-      var foundKeys = Object
-        .keys(currentEntry.tree)
-        .reduce(function (foundKeys, resultKey) {
-          foundKeys[resultKey] = true
-          addStoryEntry(currentEntry.tree[resultKey], nextEntry.tree[resultKey], previousCommit, currentEntry, resultKey)
-          return foundKeys
-        }, {})
-      Object
-        .keys(nextEntry.tree)
-        .filter(function (nextEntryKey) {
-          return !foundKeys[nextEntryKey]
-        })
-        .forEach(function (nextEntryKey) {
-          addDeletedEntry(currentEntry, nextEntry, previousCommit, nextEntryKey)
-        })
-      skipCommit(currentEntry)
-    }
-  } else if (nextEntry.tree) {
-    addReductionToEntry(currentEntry, nextEntry)
-  } else if (currentEntry.value !== nextEntry.value) {
-    var beforeBefore = currentEntry.history[currentEntry.history.length - 2]
-    if (!beforeBefore || beforeBefore.type !== 'modified' || beforeBefore.from !== nextEntry.value) {
-      addModificationToEntry(currentEntry, nextEntry)
-    } else {
-      skipCommit(currentEntry)
-    }
-  } else {
-    skipCommit(currentEntry)
+    return
   }
+  if (currentEntry.tree && !nextEntry.tree) {
+    addExpansionToEntry(currentEntry, nextEntry)
+    return
+  }
+  if (!currentEntry.tree && nextEntry.tree) {
+    addReductionToEntry(currentEntry, nextEntry)
+    return
+  }
+  if (currentEntry.tree) {
+    var foundKeys = Object
+      .keys(currentEntry.tree)
+      .reduce(function (foundKeys, resultKey) {
+        foundKeys[resultKey] = true
+        addStoryEntry(currentEntry.tree[resultKey], nextEntry.tree[resultKey], previousCommit, currentEntry, resultKey)
+        return foundKeys
+      }, {})
+    Object
+      .keys(nextEntry.tree)
+      .filter(function (nextEntryKey) {
+        return !foundKeys[nextEntryKey]
+      })
+      .forEach(function (nextEntryKey) {
+        addDeletedEntry(currentEntry, nextEntry, previousCommit, nextEntryKey)
+      })
+    skipCommit(currentEntry)
+    return
+  }
+  if (entryWasModified(currentEntry, nextEntry)) {
+    addModificationToEntry(currentEntry, nextEntry)
+    return
+  }
+  skipCommit(currentEntry)
 }
 
 function commitInfo (commit) {
