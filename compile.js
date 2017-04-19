@@ -100,6 +100,15 @@ function createParseError (path, err, commit, result) {
   return parseErr
 }
 
+function parseBlob (oldPath, newPath, parser, commit, blob, result) {
+  return new Promise(function (resolve) {
+    resolve(parser(newPath, blob.content()))
+  }).catch(function (err) {
+    result.path = oldPath
+    return Promise.reject(createParseError(newPath, err, commit, result))
+  })
+}
+
 function processCommit (options, historyEntry, commit, result) {
   var newPath = historyEntry.newName || result.path
   var oldPath = historyEntry.oldName || result.path
@@ -114,11 +123,7 @@ function processCommit (options, historyEntry, commit, result) {
             var id = delta.newFile().id()
             return options.repo.getBlob(id)
               .then(function (blob) {
-                return options.parser(newPath, blob.content())
-              })
-              .catch(function (err) {
-                result.path = oldPath
-                return Promise.reject(createParseError(newPath, err, commit, result))
+                return parseBlob(oldPath, newPath, options.parser, commit, blob, result)
               })
               .then(function (data) {
                 var story = toStoryObject(data, result.commits ? result.commits.length : 0)
