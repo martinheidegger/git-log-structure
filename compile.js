@@ -185,7 +185,7 @@ function walkPath (options, result, commit, skip) {
   var walker = options.repo.createRevWalk()
   walker.sorting(git.Revwalk.SORT.TIME)
   if (commit) {
-  walker.push(commit)
+    walker.push(commit)
   } else {
     walker.pushHead()
   }
