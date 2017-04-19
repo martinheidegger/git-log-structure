@@ -25,22 +25,22 @@ function toStoryObject (value, commit) {
   }
 }
 
-function addStory (result, newStory, previousCommit, parent, key) {
+function addStory (fileStory, newStory, previousCommit, parent, key) {
   var before
   if (!newStory) {
-    // Nothing to do here, the result was added before
-  } else if (result.tree) {
+    // Nothing to do here, the fileStory was added before
+  } else if (fileStory.tree) {
     if (!newStory.tree) {
-      before = last(result.history)
+      before = last(fileStory.history)
       before.type = 'expanded'
       before.from = newStory.value
-      result.history.push(newStory.history[0])
+      fileStory.history.push(newStory.history[0])
     } else {
       var foundKeys = Object
-        .keys(result.tree)
+        .keys(fileStory.tree)
         .reduce(function (foundKeys, resultKey) {
           foundKeys[resultKey] = true
-          addStory(result.tree[resultKey], newStory.tree[resultKey], previousCommit, result, resultKey)
+          addStory(fileStory.tree[resultKey], newStory.tree[resultKey], previousCommit, fileStory, resultKey)
           return foundKeys
         }, {})
       Object
@@ -49,7 +49,7 @@ function addStory (result, newStory, previousCommit, parent, key) {
           return !foundKeys[newStoryKey]
         })
         .forEach(function (newStoryKey) {
-          result.tree[newStoryKey] = {
+          fileStory.tree[newStoryKey] = {
             value: undefined,
             history: [
               {type: 'deleted', commit: previousCommit, from: newStory.tree[newStoryKey]},
@@ -57,27 +57,27 @@ function addStory (result, newStory, previousCommit, parent, key) {
             ]
           }
         })
-      before = last(result.history)
+      before = last(fileStory.history)
       before.commit++
     }
   } else if (newStory.tree) {
-    before = last(result.history)
+    before = last(fileStory.history)
     before.type = 'reduced'
     before.from = newStory.tree
-    result.history.push(newStory.history[0])
-  } else if (result.value !== newStory.value) {
-    var beforeBefore = result.history[result.history.length - 2]
+    fileStory.history.push(newStory.history[0])
+  } else if (fileStory.value !== newStory.value) {
+    var beforeBefore = fileStory.history[fileStory.history.length - 2]
     if (!beforeBefore || beforeBefore.type !== 'modified' || beforeBefore.from !== newStory.value) {
-      before = last(result.history)
+      before = last(fileStory.history)
       before.type = 'modified'
       before.from = newStory.value
-      result.history.push(newStory.history[0])
+      fileStory.history.push(newStory.history[0])
     } else {
-      before = last(result.history)
+      before = last(fileStory.history)
       before.commit++
     }
   } else {
-    before = last(result.history)
+    before = last(fileStory.history)
     before.commit++
   }
 }
@@ -90,30 +90,30 @@ function commitInfo (commit) {
   }
 }
 
-function createParseError (path, err, commit, result) {
+function createParseError (path, err, commit, fileStory) {
   var parseErr = new Error('EPARSE: Error while parsing: ' + path + '\n  ' + err.message)
   parseErr.stack = parseErr.stack + '\n' + err.stack
   parseErr.code = 'EPARSE'
   parseErr.name = 'ParseError'
   parseErr.commit = commitInfo(commit)
-  parseErr.result = result // Result is passed to catch handler for the oldPath!
+  parseErr.fileStory = fileStory // fileStory is passed to catch handler for the oldPath!
   return parseErr
 }
 
-function parseBlob (oldPath, newPath, parser, commit, result, blob) {
+function parseBlob (oldPath, newPath, parser, commit, fileStory, blob) {
   return new Promise(function (resolve, reject) {
     // This is run in a Promise context in order to make sure that any
     // error returned from the parser or blob.content() is caught
     resolve(parser(newPath, blob.content()))
   }).catch(function (err) {
-    result.path = oldPath
-    return Promise.reject(createParseError(newPath, err, commit, result))
+    fileStory.path = oldPath
+    return Promise.reject(createParseError(newPath, err, commit, fileStory))
   })
 }
 
-function processCommit (options, historyEntry, commit, result) {
-  var newPath = historyEntry.newName || result.path
-  var oldPath = historyEntry.oldName || result.path
+function processCommit (options, historyEntry, commit, fileStory) {
+  var newPath = historyEntry.newName || fileStory.path
+  var oldPath = historyEntry.oldName || fileStory.path
   return commit.getDiff()
     .then(function (diffs) {
       for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
@@ -124,73 +124,73 @@ function processCommit (options, historyEntry, commit, result) {
           if (newPath === delta.newFile().path()) {
             var id = delta.newFile().id()
             return options.repo.getBlob(id)
-              .then(parseBlob.bind(null, oldPath, newPath, options.parser, commit, result))
+              .then(parseBlob.bind(null, oldPath, newPath, options.parser, commit, fileStory))
               .then(function (data) {
-                var story = toStoryObject(data, result.commits ? result.commits.length : 0)
-                if (!result.commits) {
-                  story.path = result.path
+                var story = toStoryObject(data, fileStory.commits ? fileStory.commits.length : 0)
+                if (!fileStory.commits) {
+                  story.path = fileStory.path
                   story.commits = []
-                  result = story
+                  fileStory = story
                 } else {
-                  addStory(result, story, result.commits.length - 1)
+                  addStory(fileStory, story, fileStory.commits.length - 1)
                 }
-                result.commits.push(commitInfo(commit))
-                result.path = oldPath
-                return result
+                fileStory.commits.push(commitInfo(commit))
+                fileStory.path = oldPath
+                return fileStory
               })
           }
         }
       }
-      return Promise.reject(new Error('No diff for ' + result.path + ' found in commit ' + commit.sha()))
+      return Promise.reject(new Error('No diff for ' + fileStory.path + ' found in commit ' + commit.sha()))
     })
 }
 
-function processHistoryEntries (options, historyEntries, result) {
+function processHistoryEntries (options, historyEntries, fileStory) {
   if (historyEntries.length === 0) {
-    return result.commits ? result : null
+    return fileStory.commits ? fileStory : null
   } else {
     var errorMemo = null
     var historyEntry = historyEntries.shift()
-    var formerPath = result.path
+    var formerPath = fileStory.path
     return options.repo
       .getCommit(historyEntry.commit.sha())
       .then(function (commit) {
-        return processCommit(options, historyEntry, commit, result)
+        return processCommit(options, historyEntry, commit, fileStory)
       })
       .catch(function (error) {
         errorMemo = error
-        var errResult = error.result
-        delete error.result
-        return errResult || result
+        var errFileStory = error.fileStory
+        delete error.fileStory
+        return errFileStory || fileStory
       })
-      .then(function (newResult) {
+      .then(function (newStory) {
         // Recursive! Weeee
         if (errorMemo) {
-          var errors = result.errors
+          var errors = fileStory.errors
           if (!errors) {
-            errors = result.errors = []
+            errors = fileStory.errors = []
           }
           errors.push(errorMemo)
         }
-        if (newResult.path !== formerPath) {
-          newResult.history.splice(newResult.commits.length - 2, 0, {
+        if (newStory.path !== formerPath) {
+          newStory.history.splice(newStory.commits.length - 2, 0, {
             type: 'moved',
-            oldPath: newResult.path,
-            commit: newResult.commits.length - 1
+            oldPath: newStory.path,
+            commit: newStory.commits.length - 1
           })
-          return walkPath(options, newResult, last(newResult.commits).sha, true)
+          return walkPath(options, newStory, last(newStory.commits).sha, true)
         }
-        return processHistoryEntries(options, historyEntries, newResult) || newResult
+        return processHistoryEntries(options, historyEntries, newStory) || newStory
       })
-      .then(function (newResult) {
-        if (!newResult.history && errorMemo) {
+      .then(function (newStory) {
+        if (!newStory.history && errorMemo) {
           return Promise.reject(errorMemo)
         }
-        return newResult
+        return newStory
       })
   }
 }
-function walkPath (options, result, commit, skip) {
+function walkPath (options, fileStory, commit, skip) {
   var walker = options.repo.createRevWalk()
   walker.sorting(git.Revwalk.SORT.TIME)
   if (commit) {
@@ -199,17 +199,17 @@ function walkPath (options, result, commit, skip) {
     walker.pushHead()
   }
   return walker
-    .fileHistoryWalk(result.path, options.limit)
+    .fileHistoryWalk(fileStory.path, options.limit)
     .then(function (historyEntries) {
       if (historyEntries.length === 0) {
-        var err = new Error('ENOENT: file does not exist in repository \'' + result.path + '\'')
+        var err = new Error('ENOENT: file does not exist in repository \'' + fileStory.path + '\'')
         err.code = 'ENOENT'
         return Promise.reject(err)
       }
       if (skip) {
         historyEntries.shift()
       }
-      return processHistoryEntries(options, historyEntries, result)
+      return processHistoryEntries(options, historyEntries, fileStory)
     })
 }
 
