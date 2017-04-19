@@ -100,7 +100,7 @@ function createParseError (path, err, commit, result) {
   return parseErr
 }
 
-function parseBlob (oldPath, newPath, parser, commit, blob, result) {
+function parseBlob (oldPath, newPath, parser, commit, result, blob) {
   return new Promise(function (resolve, reject) {
     // This is run in a Promise context in order to make sure that any
     // error returned from the parser or blob.content() is caught
@@ -124,9 +124,7 @@ function processCommit (options, historyEntry, commit, result) {
           if (newPath === delta.newFile().path()) {
             var id = delta.newFile().id()
             return options.repo.getBlob(id)
-              .then(function (blob) {
-                return parseBlob(oldPath, newPath, options.parser, commit, blob, result)
-              })
+              .then(parseBlob.bind(null, oldPath, newPath, options.parser, commit, result))
               .then(function (data) {
                 var story = toStoryObject(data, result.commits ? result.commits.length : 0)
                 if (!result.commits) {
