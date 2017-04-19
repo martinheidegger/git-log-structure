@@ -25,59 +25,59 @@ function toStoryObject (value, commit) {
   }
 }
 
-function addStory (fileStory, newStory, previousCommit, parent, key) {
+function addStoryEntry (currentEntry, nextEntry, previousCommit, parent, key) {
   var before
-  if (!newStory) {
-    // Nothing to do here, the fileStory was added before
-  } else if (fileStory.tree) {
-    if (!newStory.tree) {
-      before = last(fileStory.history)
+  if (!nextEntry) {
+    // Nothing to do here, the currentEntry was added before
+  } else if (currentEntry.tree) {
+    if (!nextEntry.tree) {
+      before = last(currentEntry.history)
       before.type = 'expanded'
-      before.from = newStory.value
-      fileStory.history.push(newStory.history[0])
+      before.from = nextEntry.value
+      currentEntry.history.push(nextEntry.history[0])
     } else {
       var foundKeys = Object
-        .keys(fileStory.tree)
+        .keys(currentEntry.tree)
         .reduce(function (foundKeys, resultKey) {
           foundKeys[resultKey] = true
-          addStory(fileStory.tree[resultKey], newStory.tree[resultKey], previousCommit, fileStory, resultKey)
+          addStoryEntry(currentEntry.tree[resultKey], nextEntry.tree[resultKey], previousCommit, currentEntry, resultKey)
           return foundKeys
         }, {})
       Object
-        .keys(newStory.tree)
-        .filter(function (newStoryKey) {
-          return !foundKeys[newStoryKey]
+        .keys(nextEntry.tree)
+        .filter(function (nextEntryKey) {
+          return !foundKeys[nextEntryKey]
         })
-        .forEach(function (newStoryKey) {
-          fileStory.tree[newStoryKey] = {
+        .forEach(function (nextEntryKey) {
+          currentEntry.tree[nextEntryKey] = {
             value: undefined,
             history: [
-              {type: 'deleted', commit: previousCommit, from: newStory.tree[newStoryKey]},
-              newStory.history[0]
+              {type: 'deleted', commit: previousCommit, from: nextEntry.tree[nextEntryKey]},
+              nextEntry.history[0]
             ]
           }
         })
-      before = last(fileStory.history)
+      before = last(currentEntry.history)
       before.commit++
     }
-  } else if (newStory.tree) {
-    before = last(fileStory.history)
+  } else if (nextEntry.tree) {
+    before = last(currentEntry.history)
     before.type = 'reduced'
-    before.from = newStory.tree
-    fileStory.history.push(newStory.history[0])
-  } else if (fileStory.value !== newStory.value) {
-    var beforeBefore = fileStory.history[fileStory.history.length - 2]
-    if (!beforeBefore || beforeBefore.type !== 'modified' || beforeBefore.from !== newStory.value) {
-      before = last(fileStory.history)
+    before.from = nextEntry.tree
+    currentEntry.history.push(nextEntry.history[0])
+  } else if (currentEntry.value !== nextEntry.value) {
+    var beforeBefore = currentEntry.history[currentEntry.history.length - 2]
+    if (!beforeBefore || beforeBefore.type !== 'modified' || beforeBefore.from !== nextEntry.value) {
+      before = last(currentEntry.history)
       before.type = 'modified'
-      before.from = newStory.value
-      fileStory.history.push(newStory.history[0])
+      before.from = nextEntry.value
+      currentEntry.history.push(nextEntry.history[0])
     } else {
-      before = last(fileStory.history)
+      before = last(currentEntry.history)
       before.commit++
     }
   } else {
-    before = last(fileStory.history)
+    before = last(currentEntry.history)
     before.commit++
   }
 }
@@ -132,7 +132,7 @@ function processCommit (options, historyEntry, commit, fileStory) {
                   story.commits = []
                   fileStory = story
                 } else {
-                  addStory(fileStory, story, fileStory.commits.length - 1)
+                  addStoryEntry(fileStory, story, fileStory.commits.length - 1)
                 }
                 fileStory.commits.push(commitInfo(commit))
                 fileStory.path = oldPath
