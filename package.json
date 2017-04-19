@@ -19,12 +19,12 @@
   "author": "Martin Heidegger <martin.heidegger@gmail.com>",
   "license": "ISC",
   "devDependencies": {
-    "standard": "^8.0.0",
+    "standard": "latest",
     "tap": "^7.0.0"
   },
   "dependencies": {
     "js-yaml": "^3.6.1",
     "lodash.last": "^3.0.0",
-    "nodegit": "^0.14.1"
+    "nodegit": "latest"
   }
 }

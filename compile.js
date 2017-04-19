@@ -90,6 +90,16 @@ function commitInfo (commit) {
   }
 }
 
+function createParseError (path, err, commit, result) {
+  var parseErr = new Error('EPARSE: Error while parsing: ' + path + '\n  ' + err.message)
+  parseErr.stack = parseErr.stack + '\n' + err.stack
+  parseErr.code = 'EPARSE'
+  parseErr.name = 'ParseError'
+  parseErr.commit = commitInfo(commit)
+  parseErr.result = result // Result is passed to catch handler for the oldPath!
+  return parseErr
+}
+
 function processCommit (options, historyEntry, commit, result) {
   var newPath = historyEntry.newName || result.path
   var oldPath = historyEntry.oldName || result.path
@@ -108,13 +118,7 @@ function processCommit (options, historyEntry, commit, result) {
               })
               .catch(function (err) {
                 result.path = oldPath
-                var parseErr = new Error('EPARSE: Error while parsing: ' + newPath + '\n  ' + err.message)
-                parseErr.stack = parseErr.stack + '\n' + err.stack
-                parseErr.code = 'EPARSE'
-                parseErr.name = 'ParseError'
-                parseErr.commit = commitInfo(commit)
-                parseErr.result = result // Result is passed to catch handler for the oldPath!
-                return Promise.reject(parseErr)
+                return Promise.reject(createParseError(newPath, err, commit, result))
               })
               .then(function (data) {
                 var story = toStoryObject(data, result.commits ? result.commits.length : 0)
