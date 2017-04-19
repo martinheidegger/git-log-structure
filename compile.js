@@ -172,13 +172,15 @@ function processCommit (options, historyEntry, commit, fileStory) {
           return parseBlob(oldPath, newPath, options.parser, commit, fileStory, blob)
         })
         .then(function (data) {
-          var story = toStoryObject(data, fileStory.commits ? fileStory.commits.length : 0)
+          var nextStory = toStoryObject(data, fileStory.commits ? fileStory.commits.length : 0)
           if (!fileStory.commits) {
-            story.path = fileStory.path
-            story.commits = []
-            fileStory = story
+            // Replaces the whole fileStory with the story generated
+            // (first story processed)
+            nextStory.path = fileStory.path
+            nextStory.commits = []
+            fileStory = nextStory
           } else {
-            addStoryEntry(fileStory, story, fileStory.commits.length - 1)
+            addStoryEntry(fileStory, nextStory, fileStory.commits.length - 1)
           }
           fileStory.commits.push(commitInfo(commit))
           fileStory.path = oldPath
