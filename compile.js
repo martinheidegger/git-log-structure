@@ -101,7 +101,9 @@ function createParseError (path, err, commit, result) {
 }
 
 function parseBlob (oldPath, newPath, parser, commit, blob, result) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
+    // This is run in a Promise context in order to make sure that any
+    // error returned from the parser or blob.content() is caught
     resolve(parser(newPath, blob.content()))
   }).catch(function (err) {
     result.path = oldPath
