@@ -137,37 +137,53 @@ function parseBlob (oldPath, newPath, parser, commit, fileStory, blob) {
   })
 }
 
+function getBlobIDInDiffs (newPath, diffs) {
+  for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
+    var diff = diffs[diffNr]
+    var deltas = diff.numDeltas()
+    for (var deltaNr = 0; deltaNr < deltas; deltaNr++) {
+      var delta = diff.getDelta(deltaNr)
+      if (newPath === delta.newFile().path()) {
+        return delta.newFile().id()
+      }
+    }
+  }
+  return null
+}
+
+function getBlobInDiffs (repo, newPath, diffs) {
+  var blobId = getBlobIDInDiffs(diffs, newPath)
+  if (blobId === null) {
+    return Promise.resolve(null)
+  }
+  return repo.getBlob(blobId)
+}
+
 function processCommit (options, historyEntry, commit, fileStory) {
   var newPath = historyEntry.newName || fileStory.path
   var oldPath = historyEntry.oldName || fileStory.path
   return commit.getDiff()
     .then(function (diffs) {
-      for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
-        var diff = diffs[diffNr]
-        var deltas = diff.numDeltas()
-        for (var deltaNr = 0; deltaNr < deltas; deltaNr++) {
-          var delta = diff.getDelta(deltaNr)
-          if (newPath === delta.newFile().path()) {
-            var id = delta.newFile().id()
-            return options.repo.getBlob(id)
-              .then(parseBlob.bind(null, oldPath, newPath, options.parser, commit, fileStory))
-              .then(function (data) {
-                var story = toStoryObject(data, fileStory.commits ? fileStory.commits.length : 0)
-                if (!fileStory.commits) {
-                  story.path = fileStory.path
-                  story.commits = []
-                  fileStory = story
-                } else {
-                  addStoryEntry(fileStory, story, fileStory.commits.length - 1)
-                }
-                fileStory.commits.push(commitInfo(commit))
-                fileStory.path = oldPath
-                return fileStory
-              })
+      return getBlobInDiffs(options.repo, diffs, newPath)
+        .then(function (blob) {
+          if (blob === null) {
+            Promise.reject(new Error('No diff for ' + fileStory.path + ' found in commit ' + commit.sha()))
           }
-        }
-      }
-      return Promise.reject(new Error('No diff for ' + fileStory.path + ' found in commit ' + commit.sha()))
+          return parseBlob(oldPath, newPath, options.parser, commit, fileStory, blob)
+        })
+        .then(function (data) {
+          var story = toStoryObject(data, fileStory.commits ? fileStory.commits.length : 0)
+          if (!fileStory.commits) {
+            story.path = fileStory.path
+            story.commits = []
+            fileStory = story
+          } else {
+            addStoryEntry(fileStory, story, fileStory.commits.length - 1)
+          }
+          fileStory.commits.push(commitInfo(commit))
+          fileStory.path = oldPath
+          return fileStory
+        })
     })
 }
 
