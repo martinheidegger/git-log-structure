@@ -44,7 +44,8 @@ function addReductionToEntry (currentEntry, nextEntry) {
 }
 
 function skipCommit (currentEntry) {
-  // Increments the commit count in order
+  // Increments the commit count because the value stayed the same in this
+  // commit.
   var before = last(currentEntry.history)
   before.commit++
 }
