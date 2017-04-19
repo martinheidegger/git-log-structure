@@ -75,17 +75,13 @@ function entryWasModified (currentEntry, nextEntry) {
   if (currentEntry.value === nextEntry.value) {
     return false
   }
-  var beforeBefore = currentEntry.history[currentEntry.history.length - 2]
-  if (!beforeBefore) {
-    return true
+  for (var i = currentEntry.history.length - 1; i >= 0; i--) {
+    var before = currentEntry.history[i]
+    if (before.type === 'modified') {
+      return before.from !== nextEntry.value
+    }
   }
-  if (beforeBefore.type !== 'modified') {
-    return true
-  }
-  if (beforeBefore.from !== nextEntry.value) {
-    return true
-  }
-  return false
+  return true
 }
 
 function addStoryEntry (currentEntry, nextEntry, previousCommit, parent, key) {
