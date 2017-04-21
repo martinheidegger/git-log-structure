@@ -11,20 +11,11 @@
       ]
     },
     "b": {
-      "value": null,
       "history": [
         {
           "type": "deleted",
           "commit": 0,
-          "from": {
-            "history": [
-              {
-                "type": "added",
-                "commit": 1
-              }
-            ],
-            "value": 2
-          }
+          "from": 2
         },
         {
           "type": "added",

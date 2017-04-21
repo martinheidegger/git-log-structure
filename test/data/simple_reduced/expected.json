@@ -8,24 +8,8 @@
           "type": "reduced",
           "commit": 0,
           "from": {
-            "b": {
-              "value": 2,
-              "history": [
-                {
-                  "type": "added",
-                  "commit": 1
-                }
-              ]
-            },
-            "c": {
-              "value": 3,
-              "history": [
-                {
-                  "type": "added",
-                  "commit": 1
-                }
-              ]
-            }
+            "b": 2,
+            "c": 3
           }
         },
         {

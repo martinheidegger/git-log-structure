@@ -34,20 +34,30 @@ function addExpansionToEntry (currentEntry, nextEntry) {
   currentEntry.history.push(nextEntry.history[0])
 }
 
+function reduceToValue (storyEntry) {
+  if (storyEntry.tree) {
+    return Object.keys(storyEntry.tree).reduce(function (value, key) {
+      value[key] = reduceToValue(storyEntry.tree[key])
+      return value
+    }, {})
+  }
+  return storyEntry.value
+}
+
 function addReductionToEntry (currentEntry, nextEntry) {
   // Reduction means that the history of the current entry
   // ends with a simple value but it used to be an object before
   var before = last(currentEntry.history)
   before.type = 'reduced'
-  before.from = nextEntry.tree
+  before.from = reduceToValue(nextEntry)
   currentEntry.history.push(nextEntry.history[0])
 }
 
-function skipCommit (currentEntry) {
+function skipCommit (currentEntry, nextEntry) {
   // Increments the commit count because the value stayed the same in this
   // commit.
   var before = last(currentEntry.history)
-  before.commit++
+  before.commit = nextEntry.history[0].commit
 }
 
 function addModificationToEntry (currentEntry, nextEntry) {
@@ -59,15 +69,17 @@ function addModificationToEntry (currentEntry, nextEntry) {
   currentEntry.history.push(nextEntry.history[0])
 }
 
-function addDeletedEntry (currentEntry, nextEntry, previousCommit, nextEntryKey) {
+function addDeletedEntry (currentEntry, nextEntry, nextEntryKey) {
   // A deleted entry means that an key existed in the next entry that
   // doesn't exist in the current entry
+  var history = nextEntry.tree[nextEntryKey].history
+  history.unshift({
+    type: 'deleted',
+    commit: currentEntry.history[0].commit,
+    from: nextEntry.tree[nextEntryKey].value
+  })
   currentEntry.tree[nextEntryKey] = {
-    value: undefined,
-    history: [
-      {type: 'deleted', commit: previousCommit, from: nextEntry.tree[nextEntryKey]},
-      nextEntry.history[0]
-    ]
+    history: history
   }
 }
 
@@ -102,7 +114,7 @@ function addStoryEntry (currentEntry, nextEntry, previousCommit, parent, key) {
       .keys(currentEntry.tree)
       .reduce(function (foundKeys, resultKey) {
         foundKeys[resultKey] = true
-        addStoryEntry(currentEntry.tree[resultKey], nextEntry.tree[resultKey], previousCommit, currentEntry, resultKey)
+        addStoryEntry(currentEntry.tree[resultKey], nextEntry.tree[resultKey], currentEntry, resultKey)
         return foundKeys
       }, {})
     Object
@@ -111,16 +123,16 @@ function addStoryEntry (currentEntry, nextEntry, previousCommit, parent, key) {
         return !foundKeys[nextEntryKey]
       })
       .forEach(function (nextEntryKey) {
-        addDeletedEntry(currentEntry, nextEntry, previousCommit, nextEntryKey)
+        addDeletedEntry(currentEntry, nextEntry, nextEntryKey)
       })
-    skipCommit(currentEntry)
+    skipCommit(currentEntry, nextEntry)
     return
   }
   if (entryWasModified(currentEntry, nextEntry)) {
     addModificationToEntry(currentEntry, nextEntry)
     return
   }
-  skipCommit(currentEntry)
+  skipCommit(currentEntry, nextEntry)
 }
 
 function commitInfo (commit) {
@@ -187,7 +199,7 @@ function processCommit (options, historyEntry, commit, fileStory) {
           return parseBlob(oldPath, newPath, options.parser, commit, fileStory, blob)
         })
         .then(function (data) {
-          var nextStory = toStoryObject(data, fileStory.commits ? fileStory.commits.length : 0)
+          var nextStory = toStoryObject(data, commit)
           if (!fileStory.commits) {
             // Replaces the whole fileStory with the story generated
             // (first story processed)
@@ -195,9 +207,8 @@ function processCommit (options, historyEntry, commit, fileStory) {
             nextStory.commits = []
             fileStory = nextStory
           } else {
-            addStoryEntry(fileStory, nextStory, fileStory.commits.length - 1)
+            addStoryEntry(fileStory, nextStory)
           }
-          fileStory.commits.push(commitInfo(commit))
           fileStory.path = oldPath
           return fileStory
         })
@@ -215,37 +226,46 @@ function processHistoryEntries (options, historyEntries, fileStory) {
       .getCommit(historyEntry.commit.sha())
       .then(function (commit) {
         return processCommit(options, historyEntry, commit, fileStory)
-      })
-      .catch(function (error) {
-        errorMemo = error
-        var errFileStory = error.fileStory
-        delete error.fileStory
-        return errFileStory || fileStory
-      })
-      .then(function (newStory) {
-        // Recursive! Weeee
-        if (errorMemo) {
-          var errors = fileStory.errors
-          if (!errors) {
-            errors = fileStory.errors = []
-          }
-          errors.push(errorMemo)
-        }
-        if (newStory.path !== formerPath) {
-          newStory.history.splice(newStory.commits.length - 2, 0, {
-            type: 'moved',
-            oldPath: newStory.path,
-            commit: newStory.commits.length - 1
+          .catch(function (error) {
+            errorMemo = error
+            var errFileStory = error.fileStory
+            delete error.fileStory
+            return errFileStory || fileStory
           })
-          return walkPath(options, newStory, last(newStory.commits).sha, true)
-        }
-        return processHistoryEntries(options, historyEntries, newStory) || newStory
-      })
-      .then(function (newStory) {
-        if (!newStory.history && errorMemo) {
-          return Promise.reject(errorMemo)
-        }
-        return newStory
+          .then(function (newStory) {
+            // Recursive! Weeee
+            if (errorMemo) {
+              var errors = fileStory.errors
+              if (!errors) {
+                errors = fileStory.errors = []
+              }
+              errors.push(errorMemo)
+            }
+            if (newStory.path !== formerPath) {
+              // Removed added
+              var formerAdded = newStory.history.pop()
+              if (formerAdded.type !== 'added') {
+                throw new Error('For some reason the last entry is not an "added" entry -> "' + formerAdded.type + '"')
+              }
+              newStory.history.push({
+                type: 'moved',
+                oldPath: newStory.path,
+                commit: formerAdded.commit
+              })
+              newStory.history.push({
+                type: 'added',
+                commit: commit
+              })
+              return walkPath(options, newStory, commit.sha(), true)
+            }
+            return processHistoryEntries(options, historyEntries, newStory) || newStory
+          })
+          .then(function (newStory) {
+            if (!newStory.history && errorMemo) {
+              return Promise.reject(errorMemo)
+            }
+            return newStory
+          })
       })
   }
 }
@@ -272,12 +292,59 @@ function walkPath (options, fileStory, commit, skip) {
     })
 }
 
+function getAllCommits (story, commits) {
+  if (!commits) {
+    commits = new Set()
+  }
+  story.history.forEach(function (historyEntry) {
+    const commit = historyEntry.commit
+    if (!commits.has(commit)) {
+      commits.add(commit)
+    }
+  })
+  if (story.tree) {
+    Object.keys(story.tree).forEach(function (treeKey) {
+      getAllCommits(story.tree[treeKey], commits)
+    })
+  }
+  return commits
+}
+
+function sortByTime (a, b) {
+  var aTime = a.date().getTime()
+  var bTime = b.date().getTime()
+  if (aTime > bTime) return -1
+  if (bTime > aTime) return 1
+  return 0
+}
+
+function reduceCommits (story, commits, lookup) {
+  if (!commits) {
+    commits = Array.from(getAllCommits(story).values()).sort(sortByTime)
+    lookup = commits.reduce(function (lookup, commit, index) {
+      lookup.set(commit, index)
+      return lookup
+    }, new Map())
+    story.commits = commits
+  }
+  story.history.forEach(function (historyEntry) {
+    historyEntry.commit = lookup.get(historyEntry.commit)
+  })
+  if (story.tree) {
+    Object.keys(story.tree).forEach(function (treeKey) {
+      reduceCommits(story.tree[treeKey], commits, lookup)
+    })
+  }
+}
+
 function compileWithRepo (filePath, options) {
   return walkPath(options, { path: filePath }, null, false)
     .then(function (story) {
       // The story's path changes during the walkPath operation
       // After everything is done lets reset it to original path
       story.path = filePath
+      reduceCommits(story)
+      story.commits = story.commits.map(commitInfo)
       return story
     })
 }
