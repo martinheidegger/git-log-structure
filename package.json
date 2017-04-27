@@ -23,8 +23,9 @@
     "tap": "^7.0.0"
   },
   "dependencies": {
+    "bluebird": "^3.5.0",
     "js-yaml": "^3.6.1",
-    "lodash.last": "^3.0.0",
+    "lodash.reverse": "^4.0.1",
     "nodegit": "^0.18.0"
   }
 }

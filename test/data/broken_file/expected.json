@@ -1,0 +1,18 @@
+{
+  "path": "test/data/broken_file/test.json",
+  "commits": [
+    {
+      "time": 1472996880000,
+      "sha": "43deb82289d7a583cd90439cef65181f36fda361",
+      "message": "Added broken file.\n"
+    }
+  ],
+  "errors": [
+    {
+      "code": "EPARSE",
+      "name": "ParseError",
+      "commit": 0
+    }
+  ],
+  "history": []
+}

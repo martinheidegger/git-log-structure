@@ -11,7 +11,7 @@
         },
         {
           "type": "added",
-          "commit": 1
+          "commit": 2
         }
       ]
     }
@@ -23,6 +23,11 @@
       "message": "Finally fixed the file again with a different value.\n"
     },
     {
+      "message": "Broken the formerly added file.\n",
+      "sha": "5bc77856eb122d7df893649003329a4c088d1c0b",
+      "time": 1473327958000
+    },
+    {
       "time": 1473327942000,
       "sha": "c1cdb9a0148bc3db30b7ba76df827883a71b6f34",
       "message": "Added a simple file that works and will be broken next.\n"
@@ -32,17 +37,13 @@
     {
       "code": "EPARSE",
       "name": "ParseError",
-      "commit": {
-        "message": "Broken the formerly added file.\n",
-        "sha": "5bc77856eb122d7df893649003329a4c088d1c0b",
-        "time": 1473327958000
-      }
+      "commit": 1
     }
   ],
   "history": [
     {
       "type": "added",
-      "commit": 1
+      "commit": 2
     }
   ]
 }

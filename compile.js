@@ -1,6 +1,8 @@
 'use strict'
-const git = require('nodegit')
-const last = require('lodash.last')
+const reverse = require('lodash.reverse')
+const Promise = require('bluebird')
+const getRepo = require('./getRepo')
+const getCommits = require('./getCommits')
 
 function toStoryObject (value, commit) {
   if (typeof value === 'object' && value !== null) {
@@ -28,10 +30,12 @@ function toStoryObject (value, commit) {
 function addExpansionToEntry (currentEntry, nextEntry) {
   // Expansion means that the history of the current entry
   // ends with an object but it used to be a simple value
-  var before = last(currentEntry.history)
+  var before = nextEntry.history[0]
   before.type = 'expanded'
-  before.from = nextEntry.value
-  currentEntry.history.push(nextEntry.history[0])
+  before.from = currentEntry.value
+  currentEntry.tree = nextEntry.tree
+  delete currentEntry.value
+  currentEntry.history.unshift(nextEntry.history[0])
 }
 
 function reduceToValue (storyEntry) {
@@ -47,40 +51,33 @@ function reduceToValue (storyEntry) {
 function addReductionToEntry (currentEntry, nextEntry) {
   // Reduction means that the history of the current entry
   // ends with a simple value but it used to be an object before
-  var before = last(currentEntry.history)
+  var before = nextEntry.history[0]
   before.type = 'reduced'
-  before.from = reduceToValue(nextEntry)
-  currentEntry.history.push(nextEntry.history[0])
-}
-
-function skipCommit (currentEntry, nextEntry) {
-  // Increments the commit count because the value stayed the same in this
-  // commit.
-  var before = last(currentEntry.history)
-  before.commit = nextEntry.history[0].commit
+  before.from = reduceToValue(currentEntry)
+  currentEntry.value = nextEntry.value
+  delete currentEntry.tree
+  currentEntry.history.unshift(nextEntry.history[0])
 }
 
 function addModificationToEntry (currentEntry, nextEntry) {
   // Modification means that the current entry has a different simple
   // value than the next entry
-  var before = last(currentEntry.history)
+  var before = nextEntry.history[0]
   before.type = 'modified'
-  before.from = nextEntry.value
-  currentEntry.history.push(nextEntry.history[0])
+  before.from = currentEntry.value
+  currentEntry.value = nextEntry.value
+  currentEntry.history.unshift(before)
 }
 
-function addDeletedEntry (currentEntry, nextEntry, nextEntryKey) {
+function addDeletedEntry (currentEntry, nextParentEntry, key) {
   // A deleted entry means that an key existed in the next entry that
   // doesn't exist in the current entry
-  var history = nextEntry.tree[nextEntryKey].history
-  history.unshift({
+  currentEntry.history.unshift({
     type: 'deleted',
-    commit: currentEntry.history[0].commit,
-    from: nextEntry.tree[nextEntryKey].value
+    commit: nextParentEntry.history[0].commit,
+    from: currentEntry.value
   })
-  currentEntry.tree[nextEntryKey] = {
-    history: history
-  }
+  delete currentEntry.value
 }
 
 function entryWasModified (currentEntry, nextEntry) {
@@ -101,11 +98,11 @@ function addStoryEntry (currentEntry, nextEntry, previousCommit, parent, key) {
     // Nothing to do here, the currentEntry was added before
     return
   }
-  if (currentEntry.tree && !nextEntry.tree) {
+  if (!currentEntry.tree && nextEntry.tree) {
     addExpansionToEntry(currentEntry, nextEntry)
     return
   }
-  if (!currentEntry.tree && nextEntry.tree) {
+  if (currentEntry.tree && !nextEntry.tree) {
     addReductionToEntry(currentEntry, nextEntry)
     return
   }
@@ -114,32 +111,25 @@ function addStoryEntry (currentEntry, nextEntry, previousCommit, parent, key) {
       .keys(currentEntry.tree)
       .reduce(function (foundKeys, resultKey) {
         foundKeys[resultKey] = true
+        if (currentEntry.tree[resultKey] && nextEntry.tree[resultKey] === undefined) {
+          addDeletedEntry(currentEntry.tree[resultKey], nextEntry, resultKey)
+          return foundKeys
+        }
         addStoryEntry(currentEntry.tree[resultKey], nextEntry.tree[resultKey], currentEntry, resultKey)
         return foundKeys
       }, {})
     Object
       .keys(nextEntry.tree)
       .filter(function (nextEntryKey) {
-        return !foundKeys[nextEntryKey]
+        return foundKeys[nextEntryKey] !== true
       })
       .forEach(function (nextEntryKey) {
-        addDeletedEntry(currentEntry, nextEntry, nextEntryKey)
+        currentEntry.tree[nextEntryKey] = nextEntry.tree[nextEntryKey]
       })
-    skipCommit(currentEntry, nextEntry)
     return
   }
   if (entryWasModified(currentEntry, nextEntry)) {
     addModificationToEntry(currentEntry, nextEntry)
-    return
-  }
-  skipCommit(currentEntry, nextEntry)
-}
-
-function commitInfo (commit) {
-  return {
-    time: commit.date().getTime(),
-    sha: commit.sha(),
-    message: commit.message()
   }
 }
 
@@ -148,7 +138,8 @@ function createParseError (path, err, commit, fileStory) {
   parseErr.stack = parseErr.stack + '\n' + err.stack
   parseErr.code = 'EPARSE'
   parseErr.name = 'ParseError'
-  parseErr.commit = commitInfo(commit)
+  parseErr.commit = commit
+  delete commit.blobId
   parseErr.fileStory = fileStory // fileStory is passed to catch handler for the oldPath!
   return parseErr
 }
@@ -164,131 +155,51 @@ function parseBlob (oldPath, newPath, parser, commit, fileStory, blob) {
   })
 }
 
-function getBlobIDInDiffs (newPath, diffs) {
-  for (var diffNr = 0; diffNr < diffs.length; diffNr++) {
-    var diff = diffs[diffNr]
-    var deltas = diff.numDeltas()
-    for (var deltaNr = 0; deltaNr < deltas; deltaNr++) {
-      var delta = diff.getDelta(deltaNr)
-      if (newPath === delta.newFile().path()) {
-        return delta.newFile().id()
-      }
-    }
-  }
-  return null
-}
-
-function getBlobInDiffs (repo, newPath, diffs) {
-  var blobId = getBlobIDInDiffs(diffs, newPath)
-  if (blobId === null) {
-    return Promise.resolve(null)
-  }
-  return repo.getBlob(blobId)
-}
-
-function processCommit (options, historyEntry, commit, fileStory) {
-  var newPath = historyEntry.newName || fileStory.path
-  var oldPath = historyEntry.oldName || fileStory.path
-  return commit.getDiff()
-    .then(function (diffs) {
-      return getBlobInDiffs(options.repo, diffs, newPath)
-        .then(function (blob) {
-          if (blob === null) {
-            Promise.reject(new Error('No diff for ' + fileStory.path + ' found in commit ' + commit.sha()))
-          }
-          return parseBlob(oldPath, newPath, options.parser, commit, fileStory, blob)
+function processCommit (options, story, commit) {
+  return options.repo.getBlob(commit.blobId)
+    .then(function (blob) {
+      var oldPath = story.path || commit.path
+      story.path = commit.path
+      if (oldPath !== story.path) {
+        story.history.unshift({
+          type: 'moved',
+          oldPath: oldPath,
+          commit: commit
         })
+      }
+      var errorMemo
+      return parseBlob(oldPath, commit.path, options.parser, commit, story, blob)
         .then(function (data) {
-          var nextStory = toStoryObject(data, commit)
-          if (!fileStory.commits) {
+          return toStoryObject(data, commit)
+        })
+        .then(function (nextStory) {
+          if (story.history.length === 0) {
             // Replaces the whole fileStory with the story generated
             // (first story processed)
-            nextStory.path = fileStory.path
-            nextStory.commits = []
-            fileStory = nextStory
-          } else {
-            addStoryEntry(fileStory, nextStory)
+            return nextStory
           }
-          fileStory.path = oldPath
-          return fileStory
+          addStoryEntry(story, nextStory)
+          return story
         })
-    })
-}
-
-function processHistoryEntries (options, historyEntries, fileStory) {
-  if (historyEntries.length === 0) {
-    return fileStory.commits ? fileStory : null
-  } else {
-    var errorMemo = null
-    var historyEntry = historyEntries.shift()
-    var formerPath = fileStory.path
-    return options.repo
-      .getCommit(historyEntry.commit.sha())
-      .then(function (commit) {
-        return processCommit(options, historyEntry, commit, fileStory)
-          .catch(function (error) {
-            errorMemo = error
-            var errFileStory = error.fileStory
-            delete error.fileStory
-            return errFileStory || fileStory
-          })
-          .then(function (newStory) {
-            // Recursive! Weeee
-            if (errorMemo) {
-              var errors = fileStory.errors
-              if (!errors) {
-                errors = fileStory.errors = []
-              }
-              errors.push(errorMemo)
+        .catch(function (error) {
+          errorMemo = error
+          var errFileStory = error.fileStory
+          delete error.fileStory
+          return errFileStory || story
+        })
+        .then(function (newStory) {
+          if (errorMemo) {
+            var errors = story.errors
+            if (!errors) {
+              errors = newStory.errors = []
             }
-            if (newStory.path !== formerPath) {
-              // Removed added
-              var formerAdded = newStory.history.pop()
-              if (formerAdded.type !== 'added') {
-                throw new Error('For some reason the last entry is not an "added" entry -> "' + formerAdded.type + '"')
-              }
-              newStory.history.push({
-                type: 'moved',
-                oldPath: newStory.path,
-                commit: formerAdded.commit
-              })
-              newStory.history.push({
-                type: 'added',
-                commit: commit
-              })
-              return walkPath(options, newStory, commit.sha(), true)
-            }
-            return processHistoryEntries(options, historyEntries, newStory) || newStory
-          })
-          .then(function (newStory) {
-            if (!newStory.history && errorMemo) {
-              return Promise.reject(errorMemo)
-            }
-            return newStory
-          })
-      })
-  }
-}
-function walkPath (options, fileStory, commit, skip) {
-  var walker = options.repo.createRevWalk()
-  walker.sorting(git.Revwalk.SORT.TIME)
-  if (commit) {
-    walker.push(commit)
-  } else {
-    walker.pushHead()
-  }
-  return walker
-    .fileHistoryWalk(fileStory.path, options.limit)
-    .then(function (historyEntries) {
-      if (historyEntries.length === 0) {
-        var err = new Error('ENOENT: file does not exist in repository \'' + fileStory.path + '\'')
-        err.code = 'ENOENT'
-        return Promise.reject(err)
-      }
-      if (skip) {
-        historyEntries.shift()
-      }
-      return processHistoryEntries(options, historyEntries, fileStory)
+            errors.push(errorMemo)
+          } else if (story.errors) {
+            newStory.errors = story.errors
+          }
+          newStory.path = commit.path
+          return newStory
+        })
     })
 }
 
@@ -302,6 +213,14 @@ function getAllCommits (story, commits) {
       commits.add(commit)
     }
   })
+  if (story.errors) {
+    story.errors.forEach(function (error) {
+      const commit = error.commit
+      if (!commits.has(commit)) {
+        commits.add(commit)
+      }
+    })
+  }
   if (story.tree) {
     Object.keys(story.tree).forEach(function (treeKey) {
       getAllCommits(story.tree[treeKey], commits)
@@ -311,10 +230,8 @@ function getAllCommits (story, commits) {
 }
 
 function sortByTime (a, b) {
-  var aTime = a.date().getTime()
-  var bTime = b.date().getTime()
-  if (aTime > bTime) return -1
-  if (bTime > aTime) return 1
+  if (a.time > b.time) return -1
+  if (b.time > a.time) return 1
   return 0
 }
 
@@ -330,6 +247,11 @@ function reduceCommits (story, commits, lookup) {
   story.history.forEach(function (historyEntry) {
     historyEntry.commit = lookup.get(historyEntry.commit)
   })
+  if (story.errors) {
+    story.errors.forEach(function (error) {
+      error.commit = lookup.get(error.commit)
+    })
+  }
   if (story.tree) {
     Object.keys(story.tree).forEach(function (treeKey) {
       reduceCommits(story.tree[treeKey], commits, lookup)
@@ -337,16 +259,13 @@ function reduceCommits (story, commits, lookup) {
   }
 }
 
-function compileWithRepo (filePath, options) {
-  return walkPath(options, { path: filePath }, null, false)
-    .then(function (story) {
-      // The story's path changes during the walkPath operation
-      // After everything is done lets reset it to original path
-      story.path = filePath
-      reduceCommits(story)
-      story.commits = story.commits.map(commitInfo)
-      return story
+function reducePaths (story) {
+  if (story.commits.length > 0) {
+    story.path = story.commits[0].path
+    story.commits.forEach(function (commit) {
+      delete commit.path
     })
+  }
 }
 
 // TODO: Option to ignore "deleted" properties
@@ -357,13 +276,24 @@ module.exports = function compile (filePath, options) {
   options.parser = options.parser || require('./defaultParser.js')
   options.limit = options.limit || 2147483647 // 2^31 - 1 ... maximum acceptable value by git
 
-  var repo = options.repo
-  if (!repo) {
-    return git.Repository.open('.')
-      .then(function (repo) {
-        options.repo = repo
-        return compileWithRepo(filePath, options)
+  return getRepo(options.repo, options.folder)
+    .then(function (repo) {
+      options.repo = repo
+      return getCommits(options, filePath)
+    })
+    .then(function (commits) {
+      var initialStory = {
+        history: []
+      }
+      return Promise.reduce(reverse(commits), processCommit.bind(null, options), initialStory)
+    })
+    .then(function (finalStory) {
+      reduceCommits(finalStory)
+      reducePaths(finalStory)
+      // Todo: readd and test
+      finalStory.commits.forEach(function (commit) {
+        delete commit.blobId
       })
-  }
-  return compileWithRepo(filePath, options)
+      return finalStory
+    })
 }

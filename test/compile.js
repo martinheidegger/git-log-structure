@@ -20,6 +20,11 @@ function assertCommitsExist (t, commits, data, name, usedCommits) {
     }
     usedCommits[formerCommit] = true
   })
+  if (data.errors) {
+    data.errors.forEach(function (error) {
+      usedCommits[error.commit] = true
+    })
+  }
   if (data.tree) {
     Object.keys(data.tree).forEach(function (treeKey) {
       assertCommitsExist(t, commits, data.tree[treeKey], name + '.' + treeKey, usedCommits)
@@ -135,15 +140,7 @@ test('A simple file that was renamed and modified at the same commit', function 
   return compareCompiled(t, 'data/simple_renamed_modified')
 })
 test('A unparsable file', function (t) {
-  return compile('test/data/broken_file/test.json')
-    .then(function (data) {
-      t.fail(new Error('It was possible to parse a broken file.'))
-      t.end()
-    })
-    .catch(function (err) {
-      t.equal(err.code, 'EPARSE')
-      t.end()
-    })
+  return compareCompiled(t, 'data/broken_file')
 })
 test('A file that changed type', function (t) {
   return compareCompiled(t, 'data/type_changer')

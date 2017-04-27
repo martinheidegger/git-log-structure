@@ -23,8 +23,8 @@
   "commits": [
     {
       "time": 1473682599000,
-      "sha": "2f793336008e5996a21f0d78086e026c34d6e24c",
-      "message": "Changed the format\n"
+      "sha": "8510da40b5b8e813a1437d2bb8343b51249c6e0b",
+      "message": "Changed the file ending\n"
     },
     {
       "time": 1473682599000,
@@ -41,11 +41,7 @@
     {
       "code": "EPARSE",
       "name": "ParseError",
-      "commit": {
-        "message": "Changed the file ending\n",
-        "sha": "8510da40b5b8e813a1437d2bb8343b51249c6e0b",
-        "time": 1473682599000
-      }
+      "commit": 0
     }
   ],
   "history": [
