@@ -33,6 +33,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472770859000,
+      "blobId": "11d35482e788475c5477bdc5ddeb863cb47934f6",
       "sha": "0310e11b7c21e045c865f25b3972f696cdf1a28a",
       "message": "Commit that modifies a test-file\n"
     },
@@ -40,6 +41,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472770835000,
+      "blobId": "87a793bce024fb47ea9ef0f4b1d284640e64a20a",
       "sha": "0de6359ab7d7c55fefaefd3b81cf79349724ea22",
       "message": "First commit of a file that is going to be modified once\n"
     }

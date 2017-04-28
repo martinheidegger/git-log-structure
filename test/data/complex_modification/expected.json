@@ -56,43 +56,49 @@
       "author": 0,
       "committer": 0,
       "time": 1472831612000,
+      "blobId": "cda89207faf49c8d11f8e1bf86121187764b5396",
       "sha": "880e4914767c4b0e3496df1714bacaa0a2d250c1",
       "message": "Modifying the first property a final time.\n"
     },
     {
       "author": 0,
       "committer": 0,
-      "message": "Modifying the first property again.\n",
       "time": 1472831596000,
-      "sha": "0d7a5be51eded58dfdc2826bb7628c8af8f7f9a2"
+      "blobId": "e47e4e428a71ec0d3fa83987e9057ce050703be3",
+      "sha": "0d7a5be51eded58dfdc2826bb7628c8af8f7f9a2",
+      "message": "Modifying the first property again.\n"
     },
     {
       "author": 0,
       "committer": 0,
-      "message": "Modifying the second property again.\n",
       "time": 1472831580000,
-      "sha": "63b49beedb40718bbe333ce1235d00f05393ec42"
+      "blobId": "e8b40998b5c25453f670872bb317e43c41083e1b",
+      "sha": "63b49beedb40718bbe333ce1235d00f05393ec42",
+      "message": "Modifying the second property again.\n"
     },
     {
       "author": 0,
       "committer": 0,
-      "message": "Modifying the second property.\n",
       "time": 1472831566000,
-      "sha": "3afb9b814715f31cc83b4af16250d3b194f82374"
+      "blobId": "3f5423f76db191bab6615436b754e5043ea2884c",
+      "sha": "3afb9b814715f31cc83b4af16250d3b194f82374",
+      "message": "Modifying the second property.\n"
     },
     {
       "author": 0,
       "committer": 0,
-      "message": "Modifying the first property.\n",
       "time": 1472831551000,
-      "sha": "584751cbda5c4309b5a3daf37c30125184376cd6"
+      "blobId": "f393a99e10bc3f5d54b2d8dd62b7c85a9a9db6a9",
+      "sha": "584751cbda5c4309b5a3daf37c30125184376cd6",
+      "message": "Modifying the first property.\n"
     },
     {
       "author": 0,
       "committer": 0,
-      "message": "First simple commit of a file.\n",
       "time": 1472831535000,
-      "sha": "aadf3c6c7e02345199ab3c8311139bce8b65e6fd"
+      "blobId": "add20d925745be8594ff5f2ff8f6b6ae4f842bb1",
+      "sha": "aadf3c6c7e02345199ab3c8311139bce8b65e6fd",
+      "message": "First simple commit of a file.\n"
     }
   ],
   "history": [

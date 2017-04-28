@@ -36,6 +36,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472783276000,
+      "blobId": "8a47294bb2ad01ec94f809f638ff4cd79043d0dd",
       "sha": "0cc86132c5c41ee6696e784b7607177ed5939581",
       "message": "Last commit of a file which's property was reduced.\n"
     },
@@ -43,6 +44,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472783250000,
+      "blobId": "a17c003e670b00ea214f23cbcd294f31927c9eca",
       "sha": "2b0f2bbb174c7abe4dcc03ac356b1b92ddb811ec",
       "message": "First commit of a file with a property that will be reduced.\n"
     }

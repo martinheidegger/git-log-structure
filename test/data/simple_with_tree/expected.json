@@ -57,6 +57,7 @@
       "author": 0,
       "committer": 0,
       "time": 1463703348000,
+      "blobId": "d1ef431e47dbb5a07c723fca853cd8a7b28e3d43",
       "sha": "014162ca5a9309181e6ef29aad61461df9ccc9d2",
       "message": "Added simple test with tree file.\n"
     }

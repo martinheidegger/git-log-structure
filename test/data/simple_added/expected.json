@@ -37,6 +37,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472745086000,
+      "blobId": "0ae4104269f59a17ddb37ebbfd556695abb2dafa",
       "sha": "b698c48ce6039aff453e47791de71e01ab68e532",
       "message": "second commit wth added fields\n"
     },
@@ -44,6 +45,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472745051000,
+      "blobId": "8a47294bb2ad01ec94f809f638ff4cd79043d0dd",
       "sha": "ccb6991ed1ed6d6126c12ccce658fa27a26ef803",
       "message": "first commit with two files\n"
     }

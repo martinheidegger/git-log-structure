@@ -27,6 +27,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472827801000,
+      "blobId": "aeee994d6c904586a64b371f1791475ede299965",
       "sha": "ce5949afe2f306a8cc815501af26c59218f52dba",
       "message": "Modified the final test once more (for good measure)\n"
     },
@@ -34,6 +35,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472822980000,
+      "blobId": "d21d8ce7011f7c3365e4a8a9801d629acfe6d150",
       "sha": "7e1195e6f6edb970a2c1a388558349a6026eaa4e",
       "message": "Renamed once more for fitting in test cases\n"
     },
@@ -41,15 +43,17 @@
       "author": 0,
       "committer": 0,
       "time": 1472822878000,
+      "blobId": "d21d8ce7011f7c3365e4a8a9801d629acfe6d150",
       "sha": "99f117b57d8da1f116831a855cf29d88d9659c60",
       "message": "Renamed in opposite order to make sure that the sorting isn't off\n"
     },
     {
       "author": 0,
       "committer": 0,
-      "message": "Added multiple files to be renamed.\n",
       "time": 1472822841000,
-      "sha": "129fae56ed3c71424c8747d723b9f50a53beadce"
+      "blobId": "d21d8ce7011f7c3365e4a8a9801d629acfe6d150",
+      "sha": "129fae56ed3c71424c8747d723b9f50a53beadce",
+      "message": "Added multiple files to be renamed.\n"
     }
   ],
   "history": [

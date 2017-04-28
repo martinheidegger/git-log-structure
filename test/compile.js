@@ -105,7 +105,7 @@ test('A renamed file', function (t) {
 test('A complexly renamed file', function (t) {
   return compareCompiled(t, 'data/multiple-renamings')
 })
-test('A file where each properties were changed in turn twice', function (t) {
+test('A file where each properties were changed in turn twice (complex_modification)', function (t) {
   return compareCompiled(t, 'data/complex_modification')
 })
 test('A simple yaml file', function (t) {

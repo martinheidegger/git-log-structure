@@ -139,7 +139,6 @@ function createParseError (path, err, commit, fileStory) {
   parseErr.code = 'EPARSE'
   parseErr.name = 'ParseError'
   parseErr.commit = commit
-  delete commit.blobId
   parseErr.fileStory = fileStory // fileStory is passed to catch handler for the oldPath!
   return parseErr
 }
@@ -311,10 +310,6 @@ module.exports = function compile (filePath, options) {
       reduceCommits(finalStory)
       reducePaths(finalStory)
       reduceAuthors(finalStory)
-      // Todo: readd and test
-      finalStory.commits.forEach(function (commit) {
-        delete commit.blobId
-      })
       return finalStory
     })
 }

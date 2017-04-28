@@ -52,6 +52,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472777932000,
+      "blobId": "a17c003e670b00ea214f23cbcd294f31927c9eca",
       "sha": "9d61f913ee82839f9c740b46523c502b388938cd",
       "message": "Last commit of file with a property that is expanded to an object.\n"
     },
@@ -59,6 +60,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472777875000,
+      "blobId": "8a47294bb2ad01ec94f809f638ff4cd79043d0dd",
       "sha": "1a7ebfd15d6dc9671d534b14a764091c7d67f247",
       "message": "First commit of file with a property that is expanded to an object.\n"
     }

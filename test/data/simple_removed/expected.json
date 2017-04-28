@@ -41,6 +41,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472750102000,
+      "blobId": "8a47294bb2ad01ec94f809f638ff4cd79043d0dd",
       "sha": "11a429d8ff6582375bdcef677450031922b6a7c4",
       "message": "Removed one property of test file\n"
     },
@@ -48,6 +49,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472750088000,
+      "blobId": "0ae4104269f59a17ddb37ebbfd556695abb2dafa",
       "sha": "6db43685368d8e865572024fa46dfea9f6bad8cf",
       "message": "First commit of file which's property is going to be removed\n"
     }

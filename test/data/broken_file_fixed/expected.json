@@ -22,6 +22,7 @@
       "author": 0,
       "committer": 0,
       "time": 1473327618000,
+      "blobId": "8a47294bb2ad01ec94f809f638ff4cd79043d0dd",
       "sha": "5cf4ef987525362965cd2c0495710c2441a3f281",
       "message": "Then commited fixed version of file.\n"
     },
@@ -29,6 +30,7 @@
       "author": 0,
       "committer": 0,
       "message": "First committed broken version of file\n",
+      "blobId": "41dbb45c46befba8203ebc8c54fc18d5afb496e3",
       "sha": "ec51abea1f7ffd359841be7aebe97bf523d952a3",
       "time": 1473327602000
     }

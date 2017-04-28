@@ -38,6 +38,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472777611000,
+      "blobId": "34d65b1212a33d7aee5f98d0dddb38641b0f7d14",
       "sha": "5e7f6c49f7375c48e3eea626bcf803321fac259d",
       "message": "Last commit of a file that is modified twice.\n"
     },
@@ -45,6 +46,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472777584000,
+      "blobId": "b6c154f73c78b2045e013760297d04ef4c90e410",
       "sha": "5e4fd952ec6f4f80cc5f74632a0f23bfea8d7b38",
       "message": "Second commit of a file that is modified twice.\n"
     },
@@ -52,6 +54,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472777566000,
+      "blobId": "8a47294bb2ad01ec94f809f638ff4cd79043d0dd",
       "sha": "42151523c4ba5b1e7913bd6f588263164f59b070",
       "message": "First commit of a file that is modified twice.\n"
     }

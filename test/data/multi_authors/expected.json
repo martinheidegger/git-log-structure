@@ -13,23 +13,26 @@
     {
       "author": 0,
       "committer": 1,
-      "message": "Mixed author and committer\n",
+      "time": 1493342013000,
+      "blobId": "d1f6dac48a5487e8510d4530032c81f22ffcbbcc",
       "sha": "59a82c6cec50b695b71d168d0a1abb56b5a22b0d",
-      "time": 1493342013000
+      "message": "Mixed author and committer\n"
     },
     {
       "author": 0,
       "committer": 0,
-      "message": "Added a commit with a second author\n",
+      "time": 1493341916000,
+      "blobId": "756b0338afde2821505ae7771dbeab0e079fb94a",
       "sha": "fb882c58c15eb2278c7656023964400fa3af40e6",
-      "time": 1493341916000
+      "message": "Added a commit with a second author\n"
     },
     {
       "author": 1,
       "committer": 1,
-      "message": "Preparing multi-author test data\n",
+      "time": 1493341848000,
+      "blobId": "8d6b85c7b3f97652ab7fdfdf53f3dd2b6dc3ccef",
       "sha": "dc95cc6cec179648ce340ca598537ac83045be9a",
-      "time": 1493341848000
+      "message": "Preparing multi-author test data\n"
     }
   ],
   "history": [

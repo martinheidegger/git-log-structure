@@ -65,6 +65,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472830214000,
+      "blobId": "bff7b786a7c14b904029f9c55037cc9ea59be3fd",
       "sha": "9e301127ea99f25bbece7203cefc4b52169903b5",
       "message": "Modified the yaml file for good measure.\n"
     },
@@ -72,6 +73,7 @@
       "author": 0,
       "committer": 0,
       "time": 1472830135000,
+      "blobId": "91877ca81558b4c822b1f0fdc612dadcdcb63f26",
       "sha": "e24bc22fdcd99a0f0790769957886c42db53870f",
       "message": "Added yml file to test yml integration\n"
     }
