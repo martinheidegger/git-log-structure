@@ -153,10 +153,23 @@ test('A file with mixed authors', function (t) {
 test('A custom parser', function (t) {
   return compareCompiled(t, 'data/custom_parser', {
     parser: function (filePath, blob) {
-      return {
+      return Promise.resolve({
         a: blob.toString()
-      }
+      })
     }
+  })
+})
+test('A non-complient custom parser', function (t) {
+  return compile('test/data/custom_parser/test.json', {
+    parser: function (filePath, blob) {
+      return {}
+    }
+  }).then(function (data) {
+    t.ok(Array.isArray(data.errors))
+    t.equals(data.errors.length, 1)
+    var error = data.errors[0]
+    t.notEquals(error, undefined)
+    t.equals(error.code, 'EPARSE')
   })
 })
 test('A non-commited file', function (t) {

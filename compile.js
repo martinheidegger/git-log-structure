@@ -144,11 +144,17 @@ function createParseError (path, err, commit, fileStory) {
 }
 
 function parseBlob (oldPath, newPath, parser, commit, fileStory, blob) {
-  return new Promise(function (resolve, reject) {
-    // This is run in a Promise context in order to make sure that any
-    // error returned from the parser or blob.content() is caught
-    resolve(parser(newPath, blob.content()))
-  }).catch(function (err) {
+  var promise
+  try {
+    promise = parser(newPath, blob.content())
+  } catch (err) {
+    fileStory.path = oldPath
+    return Promise.reject(createParseError(newPath, err, commit, fileStory))
+  }
+  if (!promise || !promise.catch) {
+    return Promise.reject(createParseError(newPath, new Error('Parser doesnt return a promise'), commit, fileStory))
+  }
+  return promise.catch(function (err) {
     fileStory.path = oldPath
     return Promise.reject(createParseError(newPath, err, commit, fileStory))
   })
