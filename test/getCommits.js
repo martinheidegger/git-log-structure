@@ -3,8 +3,8 @@ var test = require('tap').test
 var getRepo = require('../getRepo.js')
 var getCommits = require('../getCommits')
 var defaultAuthor = {
-  email: "martin.heidegger@gmail.com",
-  name: "Martin Heidegger"
+  email: 'martin.heidegger@gmail.com',
+  name: 'Martin Heidegger'
 }
 
 function testCommits (path, limit) {
