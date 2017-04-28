@@ -1,0 +1,71 @@
+{
+  "authors": [
+    {
+      "email": "mastakaneda@gmail.com",
+      "name": "Heidegger Martin"
+    },
+    {
+      "email": "martin.heidegger@gmail.com",
+      "name": "Martin Heidegger"
+    }
+  ],
+  "commits": [
+    {
+      "author": 0,
+      "committer": 1,
+      "message": "Mixed author and committer\n",
+      "sha": "59a82c6cec50b695b71d168d0a1abb56b5a22b0d",
+      "time": 1493342013000
+    },
+    {
+      "author": 0,
+      "committer": 0,
+      "message": "Added a commit with a second author\n",
+      "sha": "fb882c58c15eb2278c7656023964400fa3af40e6",
+      "time": 1493341916000
+    },
+    {
+      "author": 1,
+      "committer": 1,
+      "message": "Preparing multi-author test data\n",
+      "sha": "dc95cc6cec179648ce340ca598537ac83045be9a",
+      "time": 1493341848000
+    }
+  ],
+  "history": [
+    {
+      "commit": 2,
+      "type": "added"
+    }
+  ],
+  "path": "test/data/multi_authors/test.json",
+  "tree": {
+    "a": {
+      "history": [
+        {
+          "commit": 2,
+          "type": "added"
+        }
+      ],
+      "value": 1
+    },
+    "b": {
+      "history": [
+        {
+          "commit": 1,
+          "type": "added"
+        }
+      ],
+      "value": 2
+    },
+    "c": {
+      "history": [
+        {
+          "commit": 0,
+          "type": "added"
+        }
+      ],
+      "value": 3
+    }
+  }
+}

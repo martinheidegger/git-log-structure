@@ -16,6 +16,21 @@ function getBlobIDInDiffs (diffs, newPath) {
   return null
 }
 
+function signatureToJSON (context, signature) {
+  var email = signature.email()
+  var json = context[email]
+  if (!json) {
+    json = {
+      email: email
+    }
+    context[email] = json
+  }
+  if (!json.name) {
+    json.name = signature.name()
+  }
+  return json
+}
+
 function stepCommit (options, historyEntry, context) {
   var newPath = historyEntry.newName || context.path
   return options.repo
@@ -32,7 +47,9 @@ function stepCommit (options, historyEntry, context) {
             sha: commit.sha(),
             message: commit.message(),
             path: newPath,
-            blobId: blobId.toString()
+            blobId: blobId.toString(),
+            author: signatureToJSON(context, commit.author()),
+            committer: signatureToJSON(context, commit.committer())
           }
         })
     })
@@ -79,7 +96,8 @@ function getCommits (options, context, commit) {
 module.exports = function (options, path) {
   var context = {
     path: path,
-    commits: []
+    commits: [],
+    signatures: {}
   }
   return getCommits(options, context, null)
 }

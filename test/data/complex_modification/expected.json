@@ -1,5 +1,11 @@
 {
   "path": "test/data/complex_modification/test.json",
+  "authors": [
+    {
+      "email": "martin.heidegger@gmail.com",
+      "name": "Martin Heidegger"
+    }
+  ],
   "tree": {
     "a": {
       "value": 4,
@@ -47,31 +53,43 @@
   },
   "commits": [
     {
+      "author": 0,
+      "committer": 0,
       "time": 1472831612000,
       "sha": "880e4914767c4b0e3496df1714bacaa0a2d250c1",
       "message": "Modifying the first property a final time.\n"
     },
     {
+      "author": 0,
+      "committer": 0,
       "message": "Modifying the first property again.\n",
       "time": 1472831596000,
       "sha": "0d7a5be51eded58dfdc2826bb7628c8af8f7f9a2"
     },
     {
+      "author": 0,
+      "committer": 0,
       "message": "Modifying the second property again.\n",
       "time": 1472831580000,
       "sha": "63b49beedb40718bbe333ce1235d00f05393ec42"
     },
     {
+      "author": 0,
+      "committer": 0,
       "message": "Modifying the second property.\n",
       "time": 1472831566000,
       "sha": "3afb9b814715f31cc83b4af16250d3b194f82374"
     },
     {
+      "author": 0,
+      "committer": 0,
       "message": "Modifying the first property.\n",
       "time": 1472831551000,
       "sha": "584751cbda5c4309b5a3daf37c30125184376cd6"
     },
     {
+      "author": 0,
+      "committer": 0,
       "message": "First simple commit of a file.\n",
       "time": 1472831535000,
       "sha": "aadf3c6c7e02345199ab3c8311139bce8b65e6fd"

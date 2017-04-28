@@ -1,7 +1,15 @@
 {
   "path": "test/data/broken_file/test.json",
+  "authors": [
+    {
+      "email": "martin.heidegger@gmail.com",
+      "name": "Martin Heidegger"
+    }
+  ],
   "commits": [
     {
+      "author": 0,
+      "committer": 0,
       "time": 1472996880000,
       "sha": "43deb82289d7a583cd90439cef65181f36fda361",
       "message": "Added broken file.\n"

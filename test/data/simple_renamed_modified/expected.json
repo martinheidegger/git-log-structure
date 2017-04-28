@@ -1,5 +1,11 @@
 {
   "path": "test/data/simple_renamed_modified/test.json",
+  "authors": [
+    {
+      "email": "martin.heidegger@gmail.com",
+      "name": "Martin Heidegger"
+    }
+  ],
   "tree": {
     "a": {
       "value": 2,
@@ -36,11 +42,15 @@
   },
   "commits": [
     {
+      "author": 0,
+      "committer": 0,
       "time": 1473328581000,
       "sha": "f6cac6b47d3199373af6e5590c7010485a4210ec",
       "message": "Renamed and changed property in one strike.\n"
     },
     {
+      "author": 0,
+      "committer": 0,
       "time": 1473328554000,
       "sha": "6e34ed93bd2c32c01d22d3fceb10c933d09e1f5a",
       "message": "Added a simple file that will be renamed.\n"

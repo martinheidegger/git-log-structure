@@ -1,5 +1,11 @@
 {
   "path": "test/data/simple_removed/test.json",
+  "authors": [
+    {
+      "email": "martin.heidegger@gmail.com",
+      "name": "Martin Heidegger"
+    }
+  ],
   "tree": {
     "a": {
       "value": 1,
@@ -32,11 +38,15 @@
   ],
   "commits": [
     {
+      "author": 0,
+      "committer": 0,
       "time": 1472750102000,
       "sha": "11a429d8ff6582375bdcef677450031922b6a7c4",
       "message": "Removed one property of test file\n"
     },
     {
+      "author": 0,
+      "committer": 0,
       "time": 1472750088000,
       "sha": "6db43685368d8e865572024fa46dfea9f6bad8cf",
       "message": "First commit of file which's property is going to be removed\n"

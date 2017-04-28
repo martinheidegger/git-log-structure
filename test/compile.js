@@ -145,6 +145,9 @@ test('A unparsable file', function (t) {
 test('A file that changed type', function (t) {
   return compareCompiled(t, 'data/type_changer')
 })
+test('A file with mixed authors', function (t) {
+  return compareCompiled(t, 'data/multi_authors')
+})
 // TODO: test('A custom parser with recursive objects')
 // TODO: test('A simple file which\'s property was renamed') <-- NP Hard
 test('A custom parser', function (t) {

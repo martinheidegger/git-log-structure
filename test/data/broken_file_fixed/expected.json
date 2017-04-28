@@ -1,5 +1,11 @@
 {
   "path": "test/data/broken_file_fixed/test.json",
+  "authors": [
+    {
+      "email": "martin.heidegger@gmail.com",
+      "name": "Martin Heidegger"
+    }
+  ],
   "tree": {
     "a": {
       "value": 1,
@@ -13,11 +19,15 @@
   },
   "commits": [
     {
+      "author": 0,
+      "committer": 0,
       "time": 1473327618000,
       "sha": "5cf4ef987525362965cd2c0495710c2441a3f281",
       "message": "Then commited fixed version of file.\n"
     },
     {
+      "author": 0,
+      "committer": 0,
       "message": "First committed broken version of file\n",
       "sha": "ec51abea1f7ffd359841be7aebe97bf523d952a3",
       "time": 1473327602000

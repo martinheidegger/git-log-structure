@@ -1,5 +1,11 @@
 {
   "path": "test/data/simple_yaml/test.yml",
+  "authors": [
+    {
+      "email": "martin.heidegger@gmail.com",
+      "name": "Martin Heidegger"
+    }
+  ],
   "tree": {
     "a": {
       "value": 1,
@@ -56,11 +62,15 @@
   },
   "commits": [
     {
+      "author": 0,
+      "committer": 0,
       "time": 1472830214000,
       "sha": "9e301127ea99f25bbece7203cefc4b52169903b5",
       "message": "Modified the yaml file for good measure.\n"
     },
     {
+      "author": 0,
+      "committer": 0,
       "time": 1472830135000,
       "sha": "e24bc22fdcd99a0f0790769957886c42db53870f",
       "message": "Added yml file to test yml integration\n"

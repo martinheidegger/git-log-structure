@@ -1,5 +1,11 @@
 {
   "path": "test/data/simple/test.json",
+  "authors": [
+    {
+      "email": "martin.heidegger@gmail.com",
+      "name": "Martin Heidegger"
+    }
+  ],
   "tree": {
     "a": {
       "value": 1,
@@ -22,6 +28,8 @@
   },
   "commits": [
     {
+      "author": 0,
+      "committer": 0,
       "time": 1463654010000,
       "sha": "f5524546a0dba7a21d30055e0113e7e76225f0ac",
       "message": "Added test json file\n"

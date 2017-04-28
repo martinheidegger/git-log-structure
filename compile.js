@@ -268,6 +268,26 @@ function reducePaths (story) {
   }
 }
 
+function reduceAuthor (lookup, authors, commit, field) {
+  var author = commit[field]
+  if (!lookup.has(author.email)) {
+    lookup.set(author.email, authors.push(author) - 1)
+  }
+  commit[field] = lookup.get(author.email)
+}
+
+function reduceAuthors (story) {
+  if (story.commits.length > 0) {
+    var authors = []
+    var lookup = new Map()
+    story.commits.forEach(function (commit) {
+      reduceAuthor(lookup, authors, commit, 'author')
+      reduceAuthor(lookup, authors, commit, 'committer')
+    }, new Map())
+    story.authors = authors
+  }
+}
+
 // TODO: Option to ignore "deleted" properties
 // TODO: Option to limit the history steps (tricky in combination with ignoring deleted properties)
 // TODO: Option for multiple files with optimized commit-loading behaviour
@@ -290,6 +310,7 @@ module.exports = function compile (filePath, options) {
     .then(function (finalStory) {
       reduceCommits(finalStory)
       reducePaths(finalStory)
+      reduceAuthors(finalStory)
       // Todo: readd and test
       finalStory.commits.forEach(function (commit) {
         delete commit.blobId
